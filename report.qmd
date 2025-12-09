@@ -7,19 +7,41 @@ format: html
 ```{r}
 library(tidyverse)
 library(lubridate)
+library(knitr)
 
 dt <- read_csv("data.csv")
 
 sleep <- dt |>
-  filter(Type == "Sleep") |> 
+  filter(Type == "Sleep") |>
   mutate(
     start = ymd_hms(Start),
     end = ymd_hms(End),
-    duration = as.duration(hm(Duration))
+    duration = as.duration(hm(Duration)),
+    duration_pretty = Duration,
+    city = case_when(
+      date(start) >= dmy("13/11/2025") & date(start) <= dmy("26/11/2025") ~ "Salvador",
+      date(start) >= dmy("27/11/2025") & date(start) <= dmy("01/12/2025") ~ "São Paulo",
+      TRUE ~ "Belo Horizonte"
+    )
   ) |>
-  filter(start >= dmy("05/11/2025")) |> 
-  select(start, end, duration) |> 
-  arrange(start)
+  mutate(
+    start_hour = hour(start),
+    time = case_when(
+      start_hour >= 18 ~ "noite",  # Evening sleep
+      start_hour < 6 ~ "noite",    # Early morning sleep
+      TRUE ~ "dia"
+    ),
+    day = case_when(
+      start_hour < 6 ~ date(start) - days(1),
+      TRUE ~ date(start)
+    )
+  ) |>
+  select(-start_hour) |>
+  select(day, time, duration, duration_pretty, start, end, city) |>
+  arrange(start) |> 
+  filter(start >= dmy("05/11/2025"))
+
+# fwrite(sleep, "sleep.csv")
 ```
 
 ## Sono
@@ -30,49 +52,32 @@ sleep <- dt |>
 - 02/12 - 09/12 (Belo Horizonte)
 
 ```{r}
-# Classify sleep as "night" or "day"
-# Night: from 19:00 (7pm) of day N to 07:00 (7am) of day N+1
-# Sleep starting before 7am is assigned to the previous night's date
-
-sleep <- sleep |>
-  mutate(
-    start_hour = hour(start),
-    sleep_type = case_when(
-      start_hour >= 18 ~ "noite",  # Evening sleep
-      start_hour < 6 ~ "noite",    # Early morning sleep
-      TRUE ~ "dia"
-    ),
-    # Assign a "sleep_date" - for early morning, use previous day's date
-    sleep_date = case_when(
-      start_hour < 6 ~ date(start) - days(1),
-      TRUE ~ date(start)
-    )
-  ) |>
-  select(-start_hour)
-
-sleep
-```
-
-```{r}
-sleep |> filter(date(start) >= dmy("08/12/2025")) |> as.data.table()
+sleep_manual <- fread("sleep.csv") |> mutate(duration = duration(duration))
+day_sleep <- sleep_manual |> filter(time == "dia")
+night_sleep <- sleep_manual |> filter(time == "noite")
 ```
 
 
 ```{r}
-# Aggregate sleep statistics per day
-
-sleep_summary <- sleep |>
-  group_by(sleep_date, sleep_type) |>
+day_sleep |>
+  group_by(day, time) |>
   summarise(
     total_duration = duration(sum(duration)),
     sleep_blocks = n(),
     avg_block_duration = duration(mean(duration)),
     .groups = "drop"
-  )
+  ) |> kable()
+```
 
-sleep |> filter(date(start) >= dmy("08/12/2025"))
-sleep_summary |> filter(sleep_date >= dmy("08/12/2025"))
 
-sleep_summary |> View()
+```{r}
+night_sleep |>
+  group_by(day, time) |>
+  summarise(
+    total_duration = duration(sum(duration)),
+    sleep_blocks = n(),
+    avg_block_duration = duration(mean(duration)),
+    .groups = "drop"
+  ) |> kable()
 ```
 
