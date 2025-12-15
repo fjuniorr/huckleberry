@@ -8,6 +8,15 @@ format: html
 library(tidyverse)
 library(lubridate)
 library(knitr)
+library(data.table)
+library(ggplot2)
+library(hms)
+
+pretty <- function(x) {
+    as_hms(as.numeric(x))
+}
+
+
 
 dt <- read_csv("data.csv")
 
@@ -64,6 +73,7 @@ day_sleep |>
   summarise(
     total_duration = duration(sum(duration)),
     sleep_blocks = n(),
+    max_block_duration = duration(max(duration)),
     avg_block_duration = duration(mean(duration)),
     .groups = "drop"
   ) |> kable()
@@ -71,13 +81,17 @@ day_sleep |>
 
 
 ```{r}
-night_sleep |>
-  group_by(day, time) |>
+night_sleep_agg <- night_sleep |>
+  select(-time) |> 
+  group_by(day, city) |>
   summarise(
-    total_duration = duration(sum(duration)),
+    total_duration = pretty(duration(sum(duration))),
     sleep_blocks = n(),
-    avg_block_duration = duration(mean(duration)),
+    max_block_duration = pretty(duration(max(duration))),
+    avg_block_duration = pretty(duration(mean(duration))),
     .groups = "drop"
-  ) |> kable()
+  )
+
+writexl::write_xlsx(night_sleep_agg, "night_sleep_agg.xlsx")  
 ```
 
