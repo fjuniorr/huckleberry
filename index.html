@@ -7,13 +7,44 @@
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 16px; }
     h1 { font-size: 18px; margin: 0 0 12px; }
-    #chart { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .controls label {
+      font-size: 13px;
+      color: #374151;
+    }
+    .controls select {
+      padding: 6px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 13px;
+      background: white;
+    }
+
+    #chart {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+    }
     .axis text { font-size: 11px; }
-    .row-label { font-size: 12px; fill: #111827; }
+    .column-label { font-size: 11px; fill: #111827; font-weight: 500; }
     .bar { rx: 4; ry: 4; }
     .bar.sleep { opacity: 0.95; }
-    .bar.wake { opacity: 0.55; }
-    .bar-label { font-size: 11px; fill: #0b1220; pointer-events: none; user-select: none; }
+    .bar.wake { opacity: 0.45; }
+    .bar-label {
+      font-size: 11px;
+      fill: #1e293b;
+      pointer-events: none;
+      user-select: none;
+      font-weight: 500;
+    }
+    .bar-label.outside { fill: #64748b; font-weight: 400; }
     .grid line { stroke: #e5e7eb; stroke-width: 1; }
     .grid path { display: none; }
 
@@ -42,12 +73,55 @@
       margin: 12px 0;
       font-size: 13px;
     }
+
+    .legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: #374151;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+    }
   </style>
 </head>
 <body>
   <h1>Baby Sleep Timeline (Sleep-day: 18:00 → 18:00)</h1>
+
+  <div class="controls">
+    <label for="days-select">Show last:</label>
+    <select id="days-select">
+      <option value="7" selected>7 days</option>
+      <option value="14">14 days</option>
+      <option value="30">30 days</option>
+      <option value="all">All days</option>
+    </select>
+  </div>
+
   <div id="errors"></div>
   <div id="chart"></div>
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-swatch" style="background: #1e40af;"></div>
+      <span>Night sleep</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background: #60a5fa;"></div>
+      <span>Day sleep</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background: #d1d5db;"></div>
+      <span>Awake</span>
+    </div>
+  </div>
   <div id="tooltip" class="tooltip"></div>
 
   <!-- D3 -->
@@ -310,7 +384,7 @@
 
     /**
      * =========================
-     * Visualization Layer (D3)
+     * Visualization Layer (D3) - Vertical Orientation
      * =========================
      */
 
@@ -318,11 +392,10 @@
       const {
         container = "#chart",
         tooltipEl = "#tooltip",
-        rowHeight = 34,
-        rowGap = 8,
-        labelWidth = 110,
-        width = 980,
-        heightPadding = 40
+        columnWidth = 100,      // width per day column
+        columnGap = 8,
+        timeAxisWidth = 50,     // left margin for time labels
+        chartHeight = 800       // total height for the 24h window
       } = opts;
 
       const sleepDays = model._sleep_days_luxon;
@@ -330,13 +403,9 @@
 
       const totalSeconds = 24 * 60 * 60; // 18:00 → next 18:00
 
-      // Build lookups
-      const dayIndex = new Map(sleepDays.map((d, i) => [d.id, i]));
-      const dayStartById = new Map(sleepDays.map(d => [d.id, d.window_start]));
-
       // Dimensions
-      const innerWidth = width - labelWidth - 20;
-      const height = sleepDays.length * (rowHeight + rowGap) + heightPadding;
+      const width = timeAxisWidth + sleepDays.length * (columnWidth + columnGap) + 20;
+      const innerHeight = chartHeight - 60; // leave room for column labels at top
 
       // Clear
       d3.select(container).selectAll("*").remove();
@@ -344,120 +413,119 @@
       const svg = d3.select(container)
         .append("svg")
         .attr("width", width)
-        .attr("height", height);
+        .attr("height", chartHeight);
 
-      const g = svg.append("g").attr("transform", `translate(10, 24)`);
+      const g = svg.append("g").attr("transform", `translate(${timeAxisWidth}, 40)`);
 
       // Scales
-      const x = d3.scaleLinear()
+      // Y-axis: time (18:00 at top → next 18:00 at bottom)
+      const y = d3.scaleLinear()
         .domain([0, totalSeconds])
-        .range([0, innerWidth]);
+        .range([0, innerHeight]);
 
-      const y = d3.scaleBand()
+      // X-axis: sleep-days (columns)
+      const x = d3.scaleBand()
         .domain(sleepDays.map(d => d.id))
-        .range([0, sleepDays.length * (rowHeight + rowGap)])
-        .paddingInner(rowGap / (rowHeight + rowGap));
+        .range([0, sleepDays.length * (columnWidth + columnGap)])
+        .paddingInner(columnGap / (columnWidth + columnGap));
 
-      // Axis ticks every 2 hours, labeled as local clock time for the 18:00-based day
+      // Axis ticks every 2 hours
       const tickEveryHours = 2;
       const ticks = d3.range(0, 24 + 0.0001, tickEveryHours).map(h => h * 3600);
 
       const tickFormat = (secFromWindowStart) => {
-        // windowStart is 18:00; add seconds then format hour
-        // Use the first sleep-day’s window start purely for formatting the time-of-day label.
         const base = sleepDays[0]?.window_start ?? DateTime.local();
         const t = base.plus({ seconds: secFromWindowStart });
         return t.toFormat("HH:mm");
       };
 
-      // Grid
+      // Horizontal grid lines
       g.append("g")
         .attr("class", "grid")
-        .call(d3.axisTop(x).tickValues(ticks).tickSize(-y.range()[1]).tickFormat(""))
-        .selectAll("text").remove();
+        .call(d3.axisLeft(y)
+          .tickValues(ticks)
+          .tickSize(-x.range()[1])
+          .tickFormat("")
+        );
 
-      // X axis (top)
+      // Y axis (left) - time labels
       g.append("g")
         .attr("class", "axis")
-        .call(d3.axisTop(x).tickValues(ticks).tickFormat(tickFormat));
+        .call(d3.axisLeft(y).tickValues(ticks).tickFormat(tickFormat));
 
-      // Row labels
-      g.selectAll(".row-label")
+      // Column labels (date at top)
+      g.selectAll(".column-label")
         .data(sleepDays)
         .enter()
         .append("text")
-        .attr("class", "row-label")
-        .attr("x", -6)
-        .attr("y", d => (y(d.id) ?? 0) + rowHeight / 2)
-        .attr("text-anchor", "end")
-        .attr("dominant-baseline", "middle")
-        .text(d => d.id);
+        .attr("class", "column-label")
+        .attr("x", d => (x(d.id) ?? 0) + columnWidth / 2)
+        .attr("y", -12)
+        .attr("text-anchor", "middle")
+        .text(d => {
+          // Format as "Mon 12/08"
+          const dt = DateTime.fromISO(d.id);
+          return dt.toFormat("ccc MM/dd");
+        });
 
-      // Color mapping for sleep types
+      // Color mapping for sleep types - improved contrast
       const sleepTypeColors = new Map([
-        ["night sleep", "#60a5fa"], // blue
-        ["day sleep", "#93c5fd"],   // lighter blue
+        ["night sleep", "#1e40af"], // dark blue (blue-800)
+        ["day sleep", "#60a5fa"],   // lighter blue (blue-400)
       ]);
-      const wakeColor = "#9ca3af"; // gray
+      const wakeColor = "#d1d5db"; // light gray
 
       const tooltip = document.querySelector(tooltipEl);
 
       const bars = g.append("g")
-        .attr("transform", `translate(${labelWidth}, 0)`)
         .selectAll("g.segment")
         .data(segments)
         .enter()
         .append("g")
         .attr("class", "segment");
 
-      // Bar rects
+      // Bar rects (vertical bars)
       bars.append("rect")
         .attr("class", d => `bar ${d.kind}`)
-        .attr("x", d => x(d.offset_start_s))
-        .attr("y", d => (y(d.sleep_day_id) ?? 0))
-        .attr("width", d => Math.max(0, x(d.offset_end_s) - x(d.offset_start_s)))
-        .attr("height", rowHeight)
+        .attr("x", d => x(d.sleep_day_id) ?? 0)
+        .attr("y", d => y(d.offset_start_s))
+        .attr("width", columnWidth)
+        .attr("height", d => Math.max(0, y(d.offset_end_s) - y(d.offset_start_s)))
         .attr("fill", d => {
           if (d.kind === "wake") return wakeColor;
-          return sleepTypeColors.get(d.type) ?? "#6ee7b7"; // fallback (green-ish)
+          return sleepTypeColors.get(d.type) ?? "#6ee7b7";
         })
         .on("mousemove", (event, d) => {
           tooltip.style.display = "block";
           tooltip.textContent = d.details;
           const pad = 12;
-          tooltip.style.left = `${Math.min(window.innerWidth - 20, event.clientX + pad)}px`;
-          tooltip.style.top = `${Math.min(window.innerHeight - 20, event.clientY + pad)}px`;
+          tooltip.style.left = `${Math.min(window.innerWidth - 400, event.clientX + pad)}px`;
+          tooltip.style.top = `${Math.min(window.innerHeight - 150, event.clientY + pad)}px`;
         })
         .on("mouseleave", () => {
           tooltip.style.display = "none";
         });
 
-      // Duration labels:
-      // Requirement: duration must always be displayed. If bar is too narrow, render label just outside bar.
+      // Duration labels - vertical bars need different positioning
+      // Minimum bar height needed to fit label inside
+      const minHeightForLabel = 28;
+
       bars.append("text")
-        .attr("class", "bar-label")
-        .attr("x", d => {
-          const x0 = x(d.offset_start_s);
-          const x1 = x(d.offset_end_s);
-          const w = x1 - x0;
-          return (w >= 36) ? (x0 + w / 2) : (x1 + 6); // center if fits else outside right
+        .attr("class", d => {
+          const barHeight = y(d.offset_end_s) - y(d.offset_start_s);
+          return barHeight >= minHeightForLabel ? "bar-label" : "bar-label outside";
         })
-        .attr("y", d => (y(d.sleep_day_id) ?? 0) + rowHeight / 2)
-        .attr("text-anchor", d => {
-          const x0 = x(d.offset_start_s);
-          const x1 = x(d.offset_end_s);
-          return (x1 - x0 >= 36) ? "middle" : "start";
+        .attr("x", d => (x(d.sleep_day_id) ?? 0) + columnWidth / 2)
+        .attr("y", d => {
+          const y0 = y(d.offset_start_s);
+          const y1 = y(d.offset_end_s);
+          const h = y1 - y0;
+          // Center label in bar if tall enough, otherwise place below
+          return h >= minHeightForLabel ? (y0 + h / 2) : (y1 + 14);
         })
+        .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
         .text(d => d.label);
-
-      // Title / legend stub (optional)
-      g.append("text")
-        .attr("x", labelWidth)
-        .attr("y", -10)
-        .attr("font-size", 12)
-        .attr("fill", "#111827")
-        .text(`Sleep-day window: 18:00 → 18:00 (${model.timezone})`);
     }
 
     /**
@@ -466,57 +534,150 @@
      * =========================
      */
 
-    const input = {
-      timezone: "America/Sao_Paulo",
-      sleep_day_start_hour: 18,
-      events: [
-        {
-          start: "2025-12-08T23:46:00-03:00",
-          end: "2025-12-09T02:44:00-03:00",
-          type: "night sleep",
-          start_condition: null, end_condition: null, start_location: null, notes: null
-        },
-        {
-          start: "2025-12-09T04:20:00-03:00",
-          end: "2025-12-09T06:16:00-03:00",
-          type: "night sleep",
-          start_condition: null, end_condition: null, start_location: null, notes: null
-        },
-        {
-          start: "2025-12-09T07:55:00-03:00",
-          end: "2025-12-09T08:57:00-03:00",
-          type: "day sleep",
-          start_condition: "Happy, under_10_minutes",
-          end_condition: null, start_location: null, notes: null
-        },
-        {
-          start: "2025-12-09T10:40:00-03:00",
-          end: "2025-12-09T10:54:00-03:00",
-          type: "day sleep",
-          start_condition: null, end_condition: null, start_location: null, notes: null
-        },
-        {
-          start: "2025-12-09T12:28:00-03:00",
-          end: "2025-12-09T12:52:00-03:00",
-          type: "day sleep",
-          start_condition: null, end_condition: null, start_location: null, notes: null
-        },
-        {
-          start: "2025-12-09T12:54:00-03:00",
-          end: "2025-12-09T13:14:00-03:00",
-          type: "day sleep",
-          start_condition: null, end_condition: null, start_location: null, notes: null
-        }
-      ]
-    };
+    const allEvents = [
+      {
+        start: "2025-12-08T23:46:00-03:00",
+        end: "2025-12-09T02:44:00-03:00",
+        type: "night sleep",
+        start_condition: null, end_condition: null, start_location: null, notes: null
+      },
+      {
+        start: "2025-12-09T04:20:00-03:00",
+        end: "2025-12-09T06:16:00-03:00",
+        type: "night sleep",
+        start_condition: null, end_condition: null, start_location: null, notes: null
+      },
+      {
+        start: "2025-12-09T07:55:00-03:00",
+        end: "2025-12-09T08:57:00-03:00",
+        type: "day sleep",
+        start_condition: "Happy, under_10_minutes",
+        end_condition: null, start_location: null, notes: null
+      },
+      {
+        start: "2025-12-09T10:40:00-03:00",
+        end: "2025-12-09T10:54:00-03:00",
+        type: "day sleep",
+        start_condition: null, end_condition: null, start_location: null, notes: null
+      },
+      {
+        start: "2025-12-09T12:28:00-03:00",
+        end: "2025-12-09T12:52:00-03:00",
+        type: "day sleep",
+        start_condition: null, end_condition: null, start_location: null, notes: null
+      },
+      {
+        start: "2025-12-09T12:54:00-03:00",
+        end: "2025-12-09T13:14:00-03:00",
+        type: "day sleep",
+        start_condition: null, end_condition: null, start_location: null, notes: null
+      },
+      // Additional sample days for testing
+      {
+        start: "2025-12-07T19:00:00-03:00",
+        end: "2025-12-07T21:30:00-03:00",
+        type: "night sleep",
+        start_condition: null, end_condition: null, start_location: null, notes: null
+      },
+      {
+        start: "2025-12-07T22:00:00-03:00",
+        end: "2025-12-08T03:00:00-03:00",
+        type: "night sleep",
+        start_condition: null, end_condition: null, start_location: null, notes: null
+      },
+      {
+        start: "2025-12-08T04:00:00-03:00",
+        end: "2025-12-08T06:30:00-03:00",
+        type: "night sleep",
+        start_condition: null, end_condition: null, start_location: null, notes: null
+      },
+      {
+        start: "2025-12-08T08:00:00-03:00",
+        end: "2025-12-08T09:30:00-03:00",
+        type: "day sleep",
+        start_condition: null, end_condition: null, start_location: null, notes: null
+      },
+      {
+        start: "2025-12-08T12:00:00-03:00",
+        end: "2025-12-08T14:00:00-03:00",
+        type: "day sleep",
+        start_condition: null, end_condition: null, start_location: null, notes: null
+      },
+      {
+        start: "2025-12-08T18:00:00-03:00",
+        end: "2025-12-08T19:08:00-03:00",
+        type: "night sleep",
+        start_condition: null, end_condition: null, start_location: null, notes: null
+      },
+      {
+        start: "2025-12-08T20:24:00-03:00",
+        end: "2025-12-08T22:10:00-03:00",
+        type: "night sleep",
+        start_condition: null, end_condition: null, start_location: null, notes: null
+      }
+    ];
 
-    try {
-      const model = buildSleepChartModel(input);
-      renderSleepChart(model, { width: 980 });
-    } catch (err) {
-      document.querySelector("#errors").innerHTML =
-        `<div class="error"><strong>Validation error</strong><pre style="margin:8px 0 0; white-space:pre-wrap;">${String(err.message)}</pre></div>`;
+    const TIMEZONE = "America/Sao_Paulo";
+
+    /**
+     * Filter events to only include the last N days (based on sleep-day windows)
+     */
+    function filterEventsByDays(events, numDays) {
+      if (numDays === "all" || !numDays) return events;
+
+      // Find the latest sleep-day in the data
+      let latestSleepDay = null;
+      for (const e of events) {
+        const dt = dtFromISO(e.start, TIMEZONE);
+        const sleepDayId = sleepDayIdFromDt(dt, 18);
+        if (!latestSleepDay || sleepDayId > latestSleepDay) {
+          latestSleepDay = sleepDayId;
+        }
+      }
+
+      if (!latestSleepDay) return events;
+
+      // Calculate cutoff date (numDays before the latest)
+      const latestDt = DateTime.fromISO(latestSleepDay, { zone: TIMEZONE });
+      const cutoffDt = latestDt.minus({ days: numDays - 1 });
+      const cutoffId = cutoffDt.toISODate();
+
+      // Filter events where the sleep-day is >= cutoff
+      return events.filter(e => {
+        const dt = dtFromISO(e.start, TIMEZONE);
+        const sleepDayId = sleepDayIdFromDt(dt, 18);
+        return sleepDayId >= cutoffId;
+      });
     }
+
+    function render(numDays) {
+      const filteredEvents = filterEventsByDays(allEvents, numDays);
+
+      const input = {
+        timezone: TIMEZONE,
+        sleep_day_start_hour: 18,
+        events: filteredEvents
+      };
+
+      try {
+        document.querySelector("#errors").innerHTML = "";
+        const model = buildSleepChartModel(input);
+        renderSleepChart(model, { columnWidth: 100, chartHeight: 800 });
+      } catch (err) {
+        document.querySelector("#errors").innerHTML =
+          `<div class="error"><strong>Validation error</strong><pre style="margin:8px 0 0; white-space:pre-wrap;">${String(err.message)}</pre></div>`;
+      }
+    }
+
+    // Wire up days selector
+    const daysSelect = document.querySelector("#days-select");
+    daysSelect.addEventListener("change", () => {
+      const val = daysSelect.value;
+      render(val === "all" ? "all" : parseInt(val, 10));
+    });
+
+    // Initial render with default (7 days)
+    render(7);
   </script>
 </body>
 </html>

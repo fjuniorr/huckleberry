@@ -1,3 +1,23 @@
+## Implementation Status
+
+| Requirement | Status | Notes |
+|-------------|--------|-------|
+| A) Conceptual model (sleep-days 18:00→18:00) | ✅ Done | `sleepDayWindowStart()` function |
+| B) Input data (ISO-8601, metadata) | ✅ Done | Luxon parsing, nullable metadata |
+| C) Wrangling layer (renderable segments) | ✅ Done | `buildSleepChartModel()` |
+| D) Interval splitting at boundaries | ✅ Done | `splitBySleepDayBoundaries()` |
+| E) Wake windows computation | ✅ Done | Gaps computed per sleep-day |
+| F) Visualization (D3/SVG Gantt chart) | ✅ Done | Colors, labels, tooltips, gridlines |
+| G) Edge cases / robustness | ✅ Done | Overlap validation, invalid duration filtering |
+| Load data from CSV | ⏳ Pending | Currently uses hardcoded sample data |
+| Data/visual separation | ✅ Done | Clean wrangling → render pipeline |
+
+### Next Steps
+1. Load and parse `data/sleep.csv` instead of hardcoded events
+2. Handle timezone conversion from UTC (CSV) to local timezone
+
+---
+
 ## Finalized requirements (based on your answers)
 
 ### A) Conceptual model

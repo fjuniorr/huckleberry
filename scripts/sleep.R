@@ -38,3 +38,5 @@ sleep <- dt |>
   select(day, time, duration, duration_pretty, start, end, start_condition, end_condition, start_location, notes) |>
   arrange(start) |> 
   filter(start >= dmy("05/11/2025"))
+
+fwrite(sleep, "data/sleep.csv")

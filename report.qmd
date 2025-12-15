@@ -5,48 +5,7 @@ format: html
 
 
 ```{r}
-library(tidyverse)
-library(lubridate)
-library(knitr)
-library(data.table)
-library(ggplot2)
-library(hms)
 
-pretty <- function(x) {
-    as_hms(as.numeric(x))
-}
-
-dt <- read_csv("data.csv")
-
-sleep <- dt |>
-  filter(Type == "Sleep") |>
-  mutate(
-    start = ymd_hms(Start),
-    end = ymd_hms(End),
-    duration = as.duration(hm(Duration)),
-    duration_pretty = Duration,
-    city = case_when(
-      date(start) >= dmy("13/11/2025") & date(start) <= dmy("26/11/2025") ~ "Salvador",
-      date(start) >= dmy("27/11/2025") & date(start) <= dmy("01/12/2025") ~ "São Paulo",
-      TRUE ~ "Belo Horizonte"
-    )
-  ) |>
-  mutate(
-    start_hour = hour(start),
-    time = case_when(
-      start_hour >= 18 ~ "noite",  # Evening sleep
-      start_hour < 6 ~ "noite",    # Early morning sleep
-      TRUE ~ "dia"
-    ),
-    day = case_when(
-      start_hour < 6 ~ date(start) - days(1),
-      TRUE ~ date(start)
-    )
-  ) |>
-  select(-start_hour) |>
-  select(day, time, duration, duration_pretty, start, end, city) |>
-  arrange(start) |> 
-  filter(start >= dmy("05/11/2025"))
 
 # fwrite(sleep, "sleep.csv")
 ```
