@@ -2,15 +2,22 @@
 
 | Requirement | Status | Notes |
 |-------------|--------|-------|
-| A) Conceptual model (sleep-days 18:00→18:00) | ✅ Done | `sleepDayWindowStart()` function |
+| A) Conceptual model (sleep-days) | ✅ Done | `sleepDayWindowStart()` function, configurable start hour |
 | B) Input data (ISO-8601, metadata) | ✅ Done | Luxon parsing, nullable metadata |
 | C) Wrangling layer (renderable segments) | ✅ Done | `buildSleepChartModel()` |
 | D) Interval splitting at boundaries | ✅ Done | `splitBySleepDayBoundaries()` |
 | E) Wake windows computation | ✅ Done | Gaps computed per sleep-day |
-| F) Visualization (D3/SVG Gantt chart) | ✅ Done | Colors, labels, tooltips, gridlines |
+| F) Visualization (D3/SVG Gantt chart) | ✅ Done | Vertical layout, colors, labels, tooltips, gridlines |
 | G) Edge cases / robustness | ✅ Done | Overlap validation, invalid duration filtering |
 | Load data from CSV | ⏳ Pending | Currently uses hardcoded sample data |
 | Data/visual separation | ✅ Done | Clean wrangling → render pipeline |
+
+### Visualization Features
+- **Vertical orientation**: Days as columns, time flows top-to-bottom (06:00 → 06:00)
+- **Day selector**: Dropdown to show last 7/14/30/all days
+- **Bar labels**: Duration only (metadata in tooltip on hover)
+- **Color scheme**: Night sleep (dark blue #1e40af), Day sleep (light blue #60a5fa), Wake (gray)
+- **Column width**: 140px per day, 920px chart height
 
 ### Next Steps
 1. Load and parse `data/sleep.csv` instead of hardcoded events

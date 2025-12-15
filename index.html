@@ -44,7 +44,7 @@
       user-select: none;
       font-weight: 500;
     }
-    .bar-label.outside { fill: #64748b; font-weight: 400; }
+    .bar-label.light { fill: #ffffff; }
     .grid line { stroke: #e5e7eb; stroke-width: 1; }
     .grid path { display: none; }
 
@@ -94,7 +94,7 @@
   </style>
 </head>
 <body>
-  <h1>Baby Sleep Timeline (Sleep-day: 18:00 → 18:00)</h1>
+  <h1>Baby Sleep Timeline (06:00 → 06:00)</h1>
 
   <div class="controls">
     <label for="days-select">Show last:</label>
@@ -392,10 +392,10 @@
       const {
         container = "#chart",
         tooltipEl = "#tooltip",
-        columnWidth = 100,      // width per day column
-        columnGap = 8,
+        columnWidth = 140,      // width per day column (generous)
+        columnGap = 10,
         timeAxisWidth = 50,     // left margin for time labels
-        chartHeight = 800       // total height for the 24h window
+        chartHeight = 920       // total height for the 24h window (generous)
       } = opts;
 
       const sleepDays = model._sleep_days_luxon;
@@ -506,25 +506,28 @@
           tooltip.style.display = "none";
         });
 
-      // Duration labels - vertical bars need different positioning
-      // Minimum bar height needed to fit label inside
-      const minHeightForLabel = 28;
+      // Duration labels only (metadata in tooltip)
+      // If bar is too short, skip label entirely (tooltip has all info)
+      const minHeightForDuration = 24;
 
-      bars.append("text")
-        .attr("class", d => {
-          const barHeight = y(d.offset_end_s) - y(d.offset_start_s);
-          return barHeight >= minHeightForLabel ? "bar-label" : "bar-label outside";
-        })
+      // Helper: check if bar needs light (white) text
+      const needsLightText = d => d.type === "night sleep";
+
+      bars.filter(d => {
+        const barHeight = y(d.offset_end_s) - y(d.offset_start_s);
+        return barHeight >= minHeightForDuration;
+      })
+        .append("text")
+        .attr("class", d => needsLightText(d) ? "bar-label light" : "bar-label")
         .attr("x", d => (x(d.sleep_day_id) ?? 0) + columnWidth / 2)
         .attr("y", d => {
           const y0 = y(d.offset_start_s);
           const y1 = y(d.offset_end_s);
-          const h = y1 - y0;
-          // Center label in bar if tall enough, otherwise place below
-          return h >= minHeightForLabel ? (y0 + h / 2) : (y1 + 14);
+          return y0 + (y1 - y0) / 2;
         })
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
+        .attr("font-weight", "600")
         .text(d => d.label);
     }
 
@@ -549,10 +552,12 @@
       },
       {
         start: "2025-12-09T07:55:00-03:00",
-        end: "2025-12-09T08:57:00-03:00",
+        end: "2025-12-09T10:30:00-03:00",
         type: "day sleep",
-        start_condition: "Happy, under_10_minutes",
-        end_condition: null, start_location: null, notes: null
+        start_condition: "Happy",
+        end_condition: "Woke naturally",
+        start_location: "Crib",
+        notes: null
       },
       {
         start: "2025-12-09T10:40:00-03:00",
@@ -583,7 +588,10 @@
         start: "2025-12-07T22:00:00-03:00",
         end: "2025-12-08T03:00:00-03:00",
         type: "night sleep",
-        start_condition: null, end_condition: null, start_location: null, notes: null
+        start_condition: "Drowsy",
+        end_condition: null,
+        start_location: "Own bed",
+        notes: "Good stretch"
       },
       {
         start: "2025-12-08T04:00:00-03:00",
@@ -618,6 +626,7 @@
     ];
 
     const TIMEZONE = "America/Sao_Paulo";
+    const SLEEP_DAY_START_HOUR = 6; // Start at 6am (morning) instead of 6pm
 
     /**
      * Filter events to only include the last N days (based on sleep-day windows)
@@ -629,7 +638,7 @@
       let latestSleepDay = null;
       for (const e of events) {
         const dt = dtFromISO(e.start, TIMEZONE);
-        const sleepDayId = sleepDayIdFromDt(dt, 18);
+        const sleepDayId = sleepDayIdFromDt(dt, SLEEP_DAY_START_HOUR);
         if (!latestSleepDay || sleepDayId > latestSleepDay) {
           latestSleepDay = sleepDayId;
         }
@@ -645,7 +654,7 @@
       // Filter events where the sleep-day is >= cutoff
       return events.filter(e => {
         const dt = dtFromISO(e.start, TIMEZONE);
-        const sleepDayId = sleepDayIdFromDt(dt, 18);
+        const sleepDayId = sleepDayIdFromDt(dt, SLEEP_DAY_START_HOUR);
         return sleepDayId >= cutoffId;
       });
     }
@@ -655,7 +664,7 @@
 
       const input = {
         timezone: TIMEZONE,
-        sleep_day_start_hour: 18,
+        sleep_day_start_hour: SLEEP_DAY_START_HOUR,
         events: filteredEvents
       };
 
