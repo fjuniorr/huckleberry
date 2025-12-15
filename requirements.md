@@ -9,7 +9,7 @@
 | E) Wake windows computation | ✅ Done | Gaps computed per sleep-day |
 | F) Visualization (D3/SVG Gantt chart) | ✅ Done | Vertical layout, colors, labels, tooltips, gridlines |
 | G) Edge cases / robustness | ✅ Done | Overlap validation, invalid duration filtering |
-| Load data from CSV | ⏳ Pending | Currently uses hardcoded sample data |
+| Load data from file | ✅ Done | R script outputs JSON, index.html fetches it |
 | Data/visual separation | ✅ Done | Clean wrangling → render pipeline |
 
 ### Visualization Features
@@ -19,9 +19,12 @@
 - **Color scheme**: Night sleep (dark blue #1e40af), Day sleep (light blue #60a5fa), Wake (gray)
 - **Column width**: 140px per day, 920px chart height
 
-### Next Steps
-1. Load and parse `data/sleep.csv` instead of hardcoded events
-2. Handle timezone conversion from UTC (CSV) to local timezone
+### Build
+```bash
+make build    # Runs R script to generate data/sleep.json from data-raw/data.csv
+```
+
+Then open `index.html` in a browser (needs a local server for fetch to work).
 
 ---
 

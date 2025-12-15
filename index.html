@@ -533,100 +533,14 @@
 
     /**
      * =========================
-     * Example usage with your sample
+     * Load data and render
      * =========================
      */
 
-    const allEvents = [
-      {
-        start: "2025-12-08T23:46:00-03:00",
-        end: "2025-12-09T02:44:00-03:00",
-        type: "night sleep",
-        start_condition: null, end_condition: null, start_location: null, notes: null
-      },
-      {
-        start: "2025-12-09T04:20:00-03:00",
-        end: "2025-12-09T06:16:00-03:00",
-        type: "night sleep",
-        start_condition: null, end_condition: null, start_location: null, notes: null
-      },
-      {
-        start: "2025-12-09T07:55:00-03:00",
-        end: "2025-12-09T10:30:00-03:00",
-        type: "day sleep",
-        start_condition: "Happy",
-        end_condition: "Woke naturally",
-        start_location: "Crib",
-        notes: null
-      },
-      {
-        start: "2025-12-09T10:40:00-03:00",
-        end: "2025-12-09T10:54:00-03:00",
-        type: "day sleep",
-        start_condition: null, end_condition: null, start_location: null, notes: null
-      },
-      {
-        start: "2025-12-09T12:28:00-03:00",
-        end: "2025-12-09T12:52:00-03:00",
-        type: "day sleep",
-        start_condition: null, end_condition: null, start_location: null, notes: null
-      },
-      {
-        start: "2025-12-09T12:54:00-03:00",
-        end: "2025-12-09T13:14:00-03:00",
-        type: "day sleep",
-        start_condition: null, end_condition: null, start_location: null, notes: null
-      },
-      // Additional sample days for testing
-      {
-        start: "2025-12-07T19:00:00-03:00",
-        end: "2025-12-07T21:30:00-03:00",
-        type: "night sleep",
-        start_condition: null, end_condition: null, start_location: null, notes: null
-      },
-      {
-        start: "2025-12-07T22:00:00-03:00",
-        end: "2025-12-08T03:00:00-03:00",
-        type: "night sleep",
-        start_condition: "Drowsy",
-        end_condition: null,
-        start_location: "Own bed",
-        notes: "Good stretch"
-      },
-      {
-        start: "2025-12-08T04:00:00-03:00",
-        end: "2025-12-08T06:30:00-03:00",
-        type: "night sleep",
-        start_condition: null, end_condition: null, start_location: null, notes: null
-      },
-      {
-        start: "2025-12-08T08:00:00-03:00",
-        end: "2025-12-08T09:30:00-03:00",
-        type: "day sleep",
-        start_condition: null, end_condition: null, start_location: null, notes: null
-      },
-      {
-        start: "2025-12-08T12:00:00-03:00",
-        end: "2025-12-08T14:00:00-03:00",
-        type: "day sleep",
-        start_condition: null, end_condition: null, start_location: null, notes: null
-      },
-      {
-        start: "2025-12-08T18:00:00-03:00",
-        end: "2025-12-08T19:08:00-03:00",
-        type: "night sleep",
-        start_condition: null, end_condition: null, start_location: null, notes: null
-      },
-      {
-        start: "2025-12-08T20:24:00-03:00",
-        end: "2025-12-08T22:10:00-03:00",
-        type: "night sleep",
-        start_condition: null, end_condition: null, start_location: null, notes: null
-      }
-    ];
-
     const TIMEZONE = "America/Sao_Paulo";
-    const SLEEP_DAY_START_HOUR = 6; // Start at 6am (morning) instead of 6pm
+    const SLEEP_DAY_START_HOUR = 6; // Start at 6am (morning)
+
+    let allEvents = [];
 
     /**
      * Filter events to only include the last N days (based on sleep-day windows)
@@ -662,6 +576,12 @@
     function render(numDays) {
       const filteredEvents = filterEventsByDays(allEvents, numDays);
 
+      if (filteredEvents.length === 0) {
+        document.querySelector("#errors").innerHTML =
+          `<div class="error">No sleep data found. Run <code>make build</code> to generate data/sleep.json</div>`;
+        return;
+      }
+
       const input = {
         timezone: TIMEZONE,
         sleep_day_start_hour: SLEEP_DAY_START_HOUR,
@@ -671,7 +591,7 @@
       try {
         document.querySelector("#errors").innerHTML = "";
         const model = buildSleepChartModel(input);
-        renderSleepChart(model, { columnWidth: 100, chartHeight: 800 });
+        renderSleepChart(model);
       } catch (err) {
         document.querySelector("#errors").innerHTML =
           `<div class="error"><strong>Validation error</strong><pre style="margin:8px 0 0; white-space:pre-wrap;">${String(err.message)}</pre></div>`;
@@ -685,8 +605,20 @@
       render(val === "all" ? "all" : parseInt(val, 10));
     });
 
-    // Initial render with default (7 days)
-    render(7);
+    // Load data and render
+    fetch("data/sleep.json")
+      .then(res => {
+        if (!res.ok) throw new Error(`Failed to load data/sleep.json (${res.status})`);
+        return res.json();
+      })
+      .then(data => {
+        allEvents = data;
+        render(7);
+      })
+      .catch(err => {
+        document.querySelector("#errors").innerHTML =
+          `<div class="error"><strong>Failed to load data</strong><br>${err.message}<br><br>Run <code>make build</code> to generate the data file.</div>`;
+      });
   </script>
 </body>
 </html>

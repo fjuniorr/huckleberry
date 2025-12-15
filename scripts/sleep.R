@@ -1,42 +1,41 @@
 library(tidyverse)
 library(lubridate)
-library(knitr)
-library(data.table)
-library(ggplot2)
-library(hms)
+library(jsonlite)
 
-pretty <- function(x) {
-    as_hms(as.numeric(x))
-}
+# Read raw data exported from Huckleberry
+dt <- read_csv("data-raw/data.csv", show_col_types = FALSE)
 
-dt <- read_csv("data-raw/data.csv")
-
+# Process sleep events
 sleep <- dt |>
   filter(Type == "Sleep") |>
   mutate(
     start = ymd_hms(Start),
     end = ymd_hms(End),
-    duration = as.duration(hm(Duration)),
-    duration_pretty = Duration,
+    type = case_when(
+      hour(start) >= 18 ~ "night sleep",
+      hour(start) < 6 ~ "night sleep",
+      TRUE ~ "day sleep"
+    ),
     start_condition = `Start Condition`,
     end_condition = `End Condition`,
     start_location = `Start Location`,
-   notes = Notes) |>
-  mutate(
-    start_hour = hour(start),
-    time = case_when(
-      start_hour >= 18 ~ "night sleep",  # Evening sleep
-      start_hour < 6 ~ "night sleep",    # Early morning sleep
-      TRUE ~ "day sleep"
-    ),
-    day = case_when(
-      start_hour < 6 ~ date(start) - days(1),
-      TRUE ~ date(start)
-    )
+    notes = Notes
   ) |>
-  select(-start_hour) |>
-  select(day, time, duration, duration_pretty, start, end, start_condition, end_condition, start_location, notes) |>
-  arrange(start) |> 
-  filter(start >= dmy("05/11/2025"))
+  # Convert timestamps to ISO-8601 strings
+  mutate(
+    start = format(start, "%Y-%m-%dT%H:%M:%S-03:00"),
+    end = format(end, "%Y-%m-%dT%H:%M:%S-03:00")
+  ) |>
+  # Replace NA with null for JSON
+  mutate(
+    across(c(start_condition, end_condition, start_location, notes),
+           ~if_else(is.na(.) | . == "", NA_character_, .))
+  ) |>
+  select(start, end, type, start_condition, end_condition, start_location, notes) |>
+  arrange(start)
 
-fwrite(sleep, "data/sleep.csv")
+# Output as JSON for index.html
+events_json <- toJSON(sleep, pretty = TRUE, na = "null")
+write(events_json, "data/sleep.json")
+
+cat("Wrote", nrow(sleep), "sleep events to data/sleep.json\n")
