@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Baby Sleep Timeline (18:00–18:00)</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 16px; }
+    h1 { font-size: 18px; margin: 0 0 12px; }
+    #chart { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
+    .axis text { font-size: 11px; }
+    .row-label { font-size: 12px; fill: #111827; }
+    .bar { rx: 4; ry: 4; }
+    .bar.sleep { opacity: 0.95; }
+    .bar.wake { opacity: 0.55; }
+    .bar-label { font-size: 11px; fill: #0b1220; pointer-events: none; user-select: none; }
+    .grid line { stroke: #e5e7eb; stroke-width: 1; }
+    .grid path { display: none; }
+
+    .tooltip {
+      position: fixed;
+      z-index: 9999;
+      max-width: 380px;
+      background: rgba(17, 24, 39, 0.96);
+      color: white;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.35;
+      pointer-events: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      display: none;
+      white-space: pre-line;
+    }
+
+    .error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #7f1d1d;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin: 12px 0;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Baby Sleep Timeline (Sleep-day: 18:00 → 18:00)</h1>
+  <div id="errors"></div>
+  <div id="chart"></div>
+  <div id="tooltip" class="tooltip"></div>
+
+  <!-- D3 -->
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <!-- Luxon for timezones and boundary logic -->
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+
+  <script type="module">
+    const { DateTime, Duration } = luxon;
+
+    /**
+     * =========================
+     * Wrangling Layer (pure-ish)
+     * =========================
+     */
+
+    /**
+     * Format a duration in seconds into "2h 58m", "14m", "1h 02m".
+     * (Always minutes resolution for readability, with 2-digit minutes when hours exist.)
+     */
+    function formatDurationPretty(seconds) {
+      const s = Math.max(0, Math.floor(seconds));
+      const totalMinutes = Math.round(s / 60); // round to nearest minute for display
+      const h = Math.floor(totalMinutes / 60);
+      const m = totalMinutes % 60;
+
+      if (h <= 0) return `${m}m`;
+      return `${h}h ${String(m).padStart(2, "0")}m`;
+    }
+
+    function dtFromISO(iso, tz) {
+      // Parse with offset if present, then convert to target tz.
+      return DateTime.fromISO(iso, { setZone: true }).setZone(tz);
+    }
+
+    /**
+     * Given a datetime, return the sleep-day window start (18:00 local).
+     */
+    function sleepDayWindowStart(dt, sleepDayStartHour = 18) {
+      const boundary = dt.startOf("day").plus({ hours: sleepDayStartHour });
+      return dt < boundary ? boundary.minus({ days: 1 }) : boundary;
+    }
+
+    function sleepDayIdFromDt(dt, sleepDayStartHour = 18) {
+      return sleepDayWindowStart(dt, sleepDayStartHour).toISODate(); // e.g., "2025-12-08"
+    }
+
+    /**
+     * Split an interval at sleep-day boundaries (18:00→18:00) so that each segment lives in exactly one sleep-day.
+     * Returns array of { sleep_day_id, window_start, window_end, start, end }
+     */
+    function splitBySleepDayBoundaries(start, end, sleepDayStartHour = 18) {
+      if (!(start instanceof DateTime) || !(end instanceof DateTime)) {
+        throw new Error("splitBySleepDayBoundaries requires Luxon DateTime objects.");
+      }
+      if (end <= start) return [];
+
+      const out = [];
+      let cursor = start;
+
+      while (cursor < end) {
+        const windowStart = sleepDayWindowStart(cursor, sleepDayStartHour);
+        const windowEnd = windowStart.plus({ days: 1 });
+        const segEnd = end < windowEnd ? end : windowEnd;
+        out.push({
+          sleep_day_id: windowStart.toISODate(),
+          window_start: windowStart,
+          window_end: windowEnd,
+          start: cursor,
+          end: segEnd,
+        });
+        cursor = segEnd;
+      }
+
+      return out;
+    }
+
+    /**
+     * Validate no overlaps within each sleep-day.
+     * Throws Error with details if overlap is found.
+     */
+    function validateNoOverlapsBySleepDay(sleepSegmentsByDay) {
+      for (const [sleepDayId, segs] of sleepSegmentsByDay.entries()) {
+        const sorted = [...segs].sort((a, b) => a.start.toMillis() - b.start.toMillis());
+        for (let i = 1; i < sorted.length; i++) {
+          const prev = sorted[i - 1];
+          const cur = sorted[i];
+          if (cur.start < prev.end) {
+            const msg =
+              `Invalid data: overlapping sleep intervals in sleep-day ${sleepDayId}\n` +
+              `Prev: ${prev.start.toISO()} → ${prev.end.toISO()} (${prev.type})\n` +
+              `Cur : ${cur.start.toISO()} → ${cur.end.toISO()} (${cur.type})`;
+            throw new Error(msg);
+          }
+        }
+      }
+    }
+
+    /**
+     * Build the render model:
+     * - split sleeps across sleep-day boundaries
+     * - validate overlaps
+     * - compute wake windows (including window edges)
+     * - compute duration_pretty + tooltip details
+     */
+    function buildSleepChartModel(input) {
+      const {
+        timezone,
+        sleep_day_start_hour = 18,
+        events
+      } = input;
+
+      // 1) Normalize + split input sleep intervals into per-sleep-day sleep segments
+      const sleepSegments = [];
+      for (const e of events) {
+        const start = dtFromISO(e.start, timezone);
+        const end = dtFromISO(e.end, timezone);
+
+        if (end <= start) continue; // or throw; here we silently drop invalid duration
+
+        const splits = splitBySleepDayBoundaries(start, end, sleep_day_start_hour);
+        for (const s of splits) {
+          const durationSeconds = (s.end.toMillis() - s.start.toMillis()) / 1000;
+          sleepSegments.push({
+            sleep_day_id: s.sleep_day_id,
+            window_start: s.window_start,
+            window_end: s.window_end,
+            kind: "sleep",
+            type: e.type,
+            start: s.start,
+            end: s.end,
+            duration_seconds: durationSeconds,
+            duration_pretty: formatDurationPretty(durationSeconds),
+            // Keep original metadata attached to each split piece
+            start_condition: e.start_condition ?? null,
+            end_condition: e.end_condition ?? null,
+            start_location: e.start_location ?? null,
+            notes: e.notes ?? null,
+          });
+        }
+      }
+
+      // 2) Determine all sleep-days to render (from the segments)
+      const sleepDayMap = new Map(); // id -> { id, window_start, window_end }
+      for (const seg of sleepSegments) {
+        if (!sleepDayMap.has(seg.sleep_day_id)) {
+          sleepDayMap.set(seg.sleep_day_id, {
+            id: seg.sleep_day_id,
+            window_start: seg.window_start,
+            window_end: seg.window_end
+          });
+        }
+      }
+
+      const sleepDays = [...sleepDayMap.values()]
+        .sort((a, b) => a.window_start.toMillis() - b.window_start.toMillis());
+
+      // 3) Group sleep segments by day, validate overlaps
+      const sleepByDay = new Map();
+      for (const day of sleepDays) sleepByDay.set(day.id, []);
+      for (const seg of sleepSegments) sleepByDay.get(seg.sleep_day_id).push(seg);
+
+      validateNoOverlapsBySleepDay(sleepByDay);
+
+      // 4) Compute wake windows per sleep-day (including edges)
+      const allSegments = [];
+      for (const day of sleepDays) {
+        const sleeps = (sleepByDay.get(day.id) ?? [])
+          .slice()
+          .sort((a, b) => a.start.toMillis() - b.start.toMillis());
+
+        // push sleeps
+        for (const s of sleeps) allSegments.push(s);
+
+        const windowStart = day.window_start;
+        const windowEnd = day.window_end;
+
+        // helper to add wake segment if positive
+        const addWake = (wStart, wEnd) => {
+          if (wEnd <= wStart) return;
+          const dur = (wEnd.toMillis() - wStart.toMillis()) / 1000;
+          allSegments.push({
+            sleep_day_id: day.id,
+            window_start: windowStart,
+            window_end: windowEnd,
+            kind: "wake",
+            type: "wake",
+            start: wStart,
+            end: wEnd,
+            duration_seconds: dur,
+            duration_pretty: formatDurationPretty(dur),
+            start_condition: null,
+            end_condition: null,
+            start_location: null,
+            notes: null,
+          });
+        };
+
+        if (sleeps.length === 0) {
+          // Entire window is wake
+          addWake(windowStart, windowEnd);
+          continue;
+        }
+
+        // edge: start of window -> first sleep
+        addWake(windowStart, sleeps[0].start);
+
+        // between sleeps
+        for (let i = 0; i < sleeps.length - 1; i++) {
+          addWake(sleeps[i].end, sleeps[i + 1].start);
+        }
+
+        // edge: last sleep -> end of window
+        addWake(sleeps[sleeps.length - 1].end, windowEnd);
+      }
+
+      // 5) Build render-friendly fields: offset seconds and tooltip strings
+      const sleepDayById = new Map(sleepDays.map(d => [d.id, d]));
+
+      const segments = allSegments.map(seg => {
+        const day = sleepDayById.get(seg.sleep_day_id);
+        const offsetStart = (seg.start.toMillis() - day.window_start.toMillis()) / 1000;
+        const offsetEnd = (seg.end.toMillis() - day.window_start.toMillis()) / 1000;
+
+        const metaLines = [];
+        if (seg.start_condition) metaLines.push(`Start condition: ${seg.start_condition}`);
+        if (seg.end_condition) metaLines.push(`End condition: ${seg.end_condition}`);
+        if (seg.start_location) metaLines.push(`Start location: ${seg.start_location}`);
+        if (seg.notes) metaLines.push(`Notes: ${seg.notes}`);
+
+        const details =
+          `${seg.kind.toUpperCase()} (${seg.type})\n` +
+          `Duration: ${seg.duration_pretty}\n` +
+          `Start: ${seg.start.toFormat("yyyy-LL-dd HH:mm")} (${timezone})\n` +
+          `End:   ${seg.end.toFormat("yyyy-LL-dd HH:mm")} (${timezone})` +
+          (metaLines.length ? `\n\n${metaLines.join("\n")}` : "");
+
+        return {
+          ...seg,
+          offset_start_s: offsetStart,
+          offset_end_s: offsetEnd,
+          label: seg.duration_pretty,
+          details
+        };
+      });
+
+      return {
+        timezone,
+        sleep_day_start_hour,
+        sleep_days: sleepDays.map(d => ({
+          id: d.id,
+          window_start: d.window_start.toISO(),
+          window_end: d.window_end.toISO()
+        })),
+        // Keep Luxon versions internally for render convenience
+        _sleep_days_luxon: sleepDays,
+        segments
+      };
+    }
+
+    /**
+     * =========================
+     * Visualization Layer (D3)
+     * =========================
+     */
+
+    function renderSleepChart(model, opts = {}) {
+      const {
+        container = "#chart",
+        tooltipEl = "#tooltip",
+        rowHeight = 34,
+        rowGap = 8,
+        labelWidth = 110,
+        width = 980,
+        heightPadding = 40
+      } = opts;
+
+      const sleepDays = model._sleep_days_luxon;
+      const segments = model.segments;
+
+      const totalSeconds = 24 * 60 * 60; // 18:00 → next 18:00
+
+      // Build lookups
+      const dayIndex = new Map(sleepDays.map((d, i) => [d.id, i]));
+      const dayStartById = new Map(sleepDays.map(d => [d.id, d.window_start]));
+
+      // Dimensions
+      const innerWidth = width - labelWidth - 20;
+      const height = sleepDays.length * (rowHeight + rowGap) + heightPadding;
+
+      // Clear
+      d3.select(container).selectAll("*").remove();
+
+      const svg = d3.select(container)
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      const g = svg.append("g").attr("transform", `translate(10, 24)`);
+
+      // Scales
+      const x = d3.scaleLinear()
+        .domain([0, totalSeconds])
+        .range([0, innerWidth]);
+
+      const y = d3.scaleBand()
+        .domain(sleepDays.map(d => d.id))
+        .range([0, sleepDays.length * (rowHeight + rowGap)])
+        .paddingInner(rowGap / (rowHeight + rowGap));
+
+      // Axis ticks every 2 hours, labeled as local clock time for the 18:00-based day
+      const tickEveryHours = 2;
+      const ticks = d3.range(0, 24 + 0.0001, tickEveryHours).map(h => h * 3600);
+
+      const tickFormat = (secFromWindowStart) => {
+        // windowStart is 18:00; add seconds then format hour
+        // Use the first sleep-day’s window start purely for formatting the time-of-day label.
+        const base = sleepDays[0]?.window_start ?? DateTime.local();
+        const t = base.plus({ seconds: secFromWindowStart });
+        return t.toFormat("HH:mm");
+      };
+
+      // Grid
+      g.append("g")
+        .attr("class", "grid")
+        .call(d3.axisTop(x).tickValues(ticks).tickSize(-y.range()[1]).tickFormat(""))
+        .selectAll("text").remove();
+
+      // X axis (top)
+      g.append("g")
+        .attr("class", "axis")
+        .call(d3.axisTop(x).tickValues(ticks).tickFormat(tickFormat));
+
+      // Row labels
+      g.selectAll(".row-label")
+        .data(sleepDays)
+        .enter()
+        .append("text")
+        .attr("class", "row-label")
+        .attr("x", -6)
+        .attr("y", d => (y(d.id) ?? 0) + rowHeight / 2)
+        .attr("text-anchor", "end")
+        .attr("dominant-baseline", "middle")
+        .text(d => d.id);
+
+      // Color mapping for sleep types
+      const sleepTypeColors = new Map([
+        ["night sleep", "#60a5fa"], // blue
+        ["day sleep", "#93c5fd"],   // lighter blue
+      ]);
+      const wakeColor = "#9ca3af"; // gray
+
+      const tooltip = document.querySelector(tooltipEl);
+
+      const bars = g.append("g")
+        .attr("transform", `translate(${labelWidth}, 0)`)
+        .selectAll("g.segment")
+        .data(segments)
+        .enter()
+        .append("g")
+        .attr("class", "segment");
+
+      // Bar rects
+      bars.append("rect")
+        .attr("class", d => `bar ${d.kind}`)
+        .attr("x", d => x(d.offset_start_s))
+        .attr("y", d => (y(d.sleep_day_id) ?? 0))
+        .attr("width", d => Math.max(0, x(d.offset_end_s) - x(d.offset_start_s)))
+        .attr("height", rowHeight)
+        .attr("fill", d => {
+          if (d.kind === "wake") return wakeColor;
+          return sleepTypeColors.get(d.type) ?? "#6ee7b7"; // fallback (green-ish)
+        })
+        .on("mousemove", (event, d) => {
+          tooltip.style.display = "block";
+          tooltip.textContent = d.details;
+          const pad = 12;
+          tooltip.style.left = `${Math.min(window.innerWidth - 20, event.clientX + pad)}px`;
+          tooltip.style.top = `${Math.min(window.innerHeight - 20, event.clientY + pad)}px`;
+        })
+        .on("mouseleave", () => {
+          tooltip.style.display = "none";
+        });
+
+      // Duration labels:
+      // Requirement: duration must always be displayed. If bar is too narrow, render label just outside bar.
+      bars.append("text")
+        .attr("class", "bar-label")
+        .attr("x", d => {
+          const x0 = x(d.offset_start_s);
+          const x1 = x(d.offset_end_s);
+          const w = x1 - x0;
+          return (w >= 36) ? (x0 + w / 2) : (x1 + 6); // center if fits else outside right
+        })
+        .attr("y", d => (y(d.sleep_day_id) ?? 0) + rowHeight / 2)
+        .attr("text-anchor", d => {
+          const x0 = x(d.offset_start_s);
+          const x1 = x(d.offset_end_s);
+          return (x1 - x0 >= 36) ? "middle" : "start";
+        })
+        .attr("dominant-baseline", "middle")
+        .text(d => d.label);
+
+      // Title / legend stub (optional)
+      g.append("text")
+        .attr("x", labelWidth)
+        .attr("y", -10)
+        .attr("font-size", 12)
+        .attr("fill", "#111827")
+        .text(`Sleep-day window: 18:00 → 18:00 (${model.timezone})`);
+    }
+
+    /**
+     * =========================
+     * Example usage with your sample
+     * =========================
+     */
+
+    const input = {
+      timezone: "America/Sao_Paulo",
+      sleep_day_start_hour: 18,
+      events: [
+        {
+          start: "2025-12-08T23:46:00-03:00",
+          end: "2025-12-09T02:44:00-03:00",
+          type: "night sleep",
+          start_condition: null, end_condition: null, start_location: null, notes: null
+        },
+        {
+          start: "2025-12-09T04:20:00-03:00",
+          end: "2025-12-09T06:16:00-03:00",
+          type: "night sleep",
+          start_condition: null, end_condition: null, start_location: null, notes: null
+        },
+        {
+          start: "2025-12-09T07:55:00-03:00",
+          end: "2025-12-09T08:57:00-03:00",
+          type: "day sleep",
+          start_condition: "Happy, under_10_minutes",
+          end_condition: null, start_location: null, notes: null
+        },
+        {
+          start: "2025-12-09T10:40:00-03:00",
+          end: "2025-12-09T10:54:00-03:00",
+          type: "day sleep",
+          start_condition: null, end_condition: null, start_location: null, notes: null
+        },
+        {
+          start: "2025-12-09T12:28:00-03:00",
+          end: "2025-12-09T12:52:00-03:00",
+          type: "day sleep",
+          start_condition: null, end_condition: null, start_location: null, notes: null
+        },
+        {
+          start: "2025-12-09T12:54:00-03:00",
+          end: "2025-12-09T13:14:00-03:00",
+          type: "day sleep",
+          start_condition: null, end_condition: null, start_location: null, notes: null
+        }
+      ]
+    };
+
+    try {
+      const model = buildSleepChartModel(input);
+      renderSleepChart(model, { width: 980 });
+    } catch (err) {
+      document.querySelector("#errors").innerHTML =
+        `<div class="error"><strong>Validation error</strong><pre style="margin:8px 0 0; white-space:pre-wrap;">${String(err.message)}</pre></div>`;
+    }
+  </script>
+</body>
+</html>

@@ -16,8 +16,6 @@ pretty <- function(x) {
     as_hms(as.numeric(x))
 }
 
-
-
 dt <- read_csv("data.csv")
 
 sleep <- dt |>
