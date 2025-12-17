@@ -26,12 +26,6 @@
       background: white;
     }
 
-    #chart {
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 16px;
-      overflow-x: auto;
-    }
     .axis text { font-size: 11px; }
     .column-label { font-size: 11px; fill: #111827; font-weight: 500; }
     .bar { rx: 4; ry: 4; }
@@ -92,10 +86,30 @@
       height: 16px;
       border-radius: 3px;
     }
+
+    .charts-container {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .chart-wrapper {
+      flex: 0 0 auto;
+    }
+    .chart-wrapper h2 {
+      font-size: 14px;
+      margin: 0 0 8px;
+      color: #374151;
+    }
+    .chart-wrapper > div:first-of-type {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+    }
   </style>
 </head>
 <body>
-  <h1>Baby Sleep Timeline (06:00 → 06:00)</h1>
+  <h1>Baby Sleep &amp; Feeding Timeline (06:00 → 06:00)</h1>
 
   <div class="controls">
     <label for="days-select">Show last:</label>
@@ -108,21 +122,43 @@
   </div>
 
   <div id="errors"></div>
-  <div id="chart"></div>
-  <div class="legend">
-    <div class="legend-item">
-      <div class="legend-swatch" style="background: #1e40af;"></div>
-      <span>Night sleep</span>
+
+  <div class="charts-container">
+    <div class="chart-wrapper">
+      <h2>Sleep</h2>
+      <div id="chart-sleep"></div>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-swatch" style="background: #1e40af;"></div>
+          <span>Night sleep</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch" style="background: #60a5fa;"></div>
+          <span>Day sleep</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch" style="background: #d1d5db;"></div>
+          <span>Awake</span>
+        </div>
+      </div>
     </div>
-    <div class="legend-item">
-      <div class="legend-swatch" style="background: #60a5fa;"></div>
-      <span>Day sleep</span>
-    </div>
-    <div class="legend-item">
-      <div class="legend-swatch" style="background: #d1d5db;"></div>
-      <span>Awake</span>
+
+    <div class="chart-wrapper">
+      <h2>Feeding</h2>
+      <div id="chart-feed"></div>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-swatch" style="background: #dc2626;"></div>
+          <span>Feeding</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch" style="background: #fca5a5;"></div>
+          <span>No feeding</span>
+        </div>
+      </div>
     </div>
   </div>
+
   <div id="tooltip" class="tooltip"></div>
 
   <!-- D3 -->
@@ -417,7 +453,7 @@
 
     function renderSleepChart(model, opts = {}) {
       const {
-        container = "#chart",
+        container = "#chart-sleep",
         tooltipEl = "#tooltip",
         columnWidth = 140,      // width per day column (generous)
         columnGap = 10,
@@ -622,6 +658,396 @@
 
     /**
      * =========================
+     * Feeding Visualization
+     * =========================
+     */
+
+    /**
+     * Build the feeding chart model - similar structure to sleep but simpler
+     */
+    function buildFeedChartModel(input) {
+      const {
+        timezone,
+        sleep_day_start_hour = 6,
+        events
+      } = input;
+
+      // 1) Normalize + split input feed intervals into per-day segments
+      const feedSegments = [];
+      for (const e of events) {
+        const start = dtFromISO(e.start, timezone);
+        const end = dtFromISO(e.end, timezone);
+
+        if (end <= start) continue;
+
+        const splits = splitBySleepDayBoundaries(start, end, sleep_day_start_hour);
+        for (const s of splits) {
+          const durationSeconds = (s.end.toMillis() - s.start.toMillis()) / 1000;
+          feedSegments.push({
+            sleep_day_id: s.sleep_day_id,
+            window_start: s.window_start,
+            window_end: s.window_end,
+            kind: "feed",
+            start: s.start,
+            end: s.end,
+            duration_seconds: durationSeconds,
+            duration_pretty: formatDurationPretty(durationSeconds),
+            right_breast: e.right_breast ?? null,
+            left_breast: e.left_breast ?? null,
+            notes: e.notes ?? null,
+          });
+        }
+      }
+
+      // 2) Determine all days to render
+      const dayMap = new Map();
+      for (const seg of feedSegments) {
+        if (!dayMap.has(seg.sleep_day_id)) {
+          dayMap.set(seg.sleep_day_id, {
+            id: seg.sleep_day_id,
+            window_start: seg.window_start,
+            window_end: seg.window_end
+          });
+        }
+      }
+
+      const days = [...dayMap.values()]
+        .sort((a, b) => a.window_start.toMillis() - b.window_start.toMillis());
+
+      // 3) Group feed segments by day
+      const feedByDay = new Map();
+      for (const day of days) feedByDay.set(day.id, []);
+      for (const seg of feedSegments) feedByDay.get(seg.sleep_day_id).push(seg);
+
+      // 4) Compute "no feeding" windows per day
+      const allSegments = [];
+      for (const day of days) {
+        const feeds = (feedByDay.get(day.id) ?? [])
+          .slice()
+          .sort((a, b) => a.start.toMillis() - b.start.toMillis());
+
+        for (const f of feeds) allSegments.push(f);
+
+        const windowStart = day.window_start;
+        const windowEnd = day.window_end;
+
+        const addNoFeed = (wStart, wEnd) => {
+          if (wEnd <= wStart) return;
+          const dur = (wEnd.toMillis() - wStart.toMillis()) / 1000;
+          allSegments.push({
+            sleep_day_id: day.id,
+            window_start: windowStart,
+            window_end: windowEnd,
+            kind: "no_feed",
+            start: wStart,
+            end: wEnd,
+            duration_seconds: dur,
+            duration_pretty: formatDurationPretty(dur),
+            right_breast: null,
+            left_breast: null,
+            notes: null,
+          });
+        };
+
+        if (feeds.length === 0) {
+          addNoFeed(windowStart, windowEnd);
+          continue;
+        }
+
+        addNoFeed(windowStart, feeds[0].start);
+        for (let i = 0; i < feeds.length - 1; i++) {
+          addNoFeed(feeds[i].end, feeds[i + 1].start);
+        }
+        addNoFeed(feeds[feeds.length - 1].end, windowEnd);
+      }
+
+      // 5) Compute summary statistics per day
+      for (const day of days) {
+        const dayFeeds = allSegments.filter(s => s.sleep_day_id === day.id && s.kind === "feed");
+        const feedCount = dayFeeds.length;
+        const totalFeedSeconds = dayFeeds.reduce((sum, s) => sum + s.duration_seconds, 0);
+        const avgFeedSeconds = feedCount > 0 ? totalFeedSeconds / feedCount : 0;
+
+        // Time between feeds (gaps) - exclude edge gaps at start/end of window
+        const sortedFeeds = [...dayFeeds].sort((a, b) => a.start.toMillis() - b.start.toMillis());
+        const gaps = [];
+        for (let i = 0; i < sortedFeeds.length - 1; i++) {
+          const gapSeconds = (sortedFeeds[i + 1].start.toMillis() - sortedFeeds[i].end.toMillis()) / 1000;
+          if (gapSeconds > 0) gaps.push(gapSeconds);
+        }
+        const avgGapSeconds = gaps.length > 0 ? gaps.reduce((a, b) => a + b, 0) / gaps.length : 0;
+        const maxGapSeconds = gaps.length > 0 ? Math.max(...gaps) : 0;
+
+        day.summary = {
+          feed_count: feedCount,
+          feed_total_seconds: totalFeedSeconds,
+          feed_total_pretty: formatDurationPretty(totalFeedSeconds),
+          feed_avg_seconds: avgFeedSeconds,
+          feed_avg_pretty: formatDurationPretty(avgFeedSeconds),
+          gap_avg_seconds: avgGapSeconds,
+          gap_avg_pretty: formatDurationPretty(avgGapSeconds),
+          gap_max_seconds: maxGapSeconds,
+          gap_max_pretty: formatDurationPretty(maxGapSeconds),
+        };
+      }
+
+      // 6) Build render-friendly fields
+      const dayById = new Map(days.map(d => [d.id, d]));
+
+      const segments = allSegments.map(seg => {
+        const day = dayById.get(seg.sleep_day_id);
+        const offsetStart = (seg.start.toMillis() - day.window_start.toMillis()) / 1000;
+        const offsetEnd = (seg.end.toMillis() - day.window_start.toMillis()) / 1000;
+
+        const hasNotes = !!seg.notes;
+
+        // Build tooltip details
+        const metaLines = [];
+        if (seg.right_breast) metaLines.push(`Right: ${seg.right_breast}`);
+        if (seg.left_breast) metaLines.push(`Left: ${seg.left_breast}`);
+        if (seg.notes) metaLines.push(`Notes: ${seg.notes.replace(/\\n/g, '\n')}`);
+
+        const details = seg.kind === "feed"
+          ? `${seg.start.toFormat("HH:mm")} → ${seg.end.toFormat("HH:mm")}  (${seg.duration_pretty})` +
+            (metaLines.length ? `\n\n${metaLines.join("\n")}` : "")
+          : `${seg.start.toFormat("HH:mm")} → ${seg.end.toFormat("HH:mm")}  (${seg.duration_pretty})`;
+
+        return {
+          ...seg,
+          offset_start_s: offsetStart,
+          offset_end_s: offsetEnd,
+          has_notes: hasNotes,
+          label: seg.duration_pretty,
+          details
+        };
+      });
+
+      return {
+        timezone,
+        sleep_day_start_hour,
+        days: days.map(d => ({
+          id: d.id,
+          window_start: d.window_start.toISO(),
+          window_end: d.window_end.toISO(),
+          summary: d.summary
+        })),
+        _days_luxon: days,
+        segments
+      };
+    }
+
+    /**
+     * Render the feeding chart (vertical orientation, red color scheme)
+     */
+    function renderFeedChart(model, opts = {}) {
+      const {
+        container = "#chart-feed",
+        tooltipEl = "#tooltip",
+        columnWidth = 140,
+        columnGap = 10,
+        timeAxisWidth = 50,
+        chartHeight = 920,
+        summaryHeight = 100
+      } = opts;
+
+      const days = model._days_luxon;
+      const segments = model.segments;
+
+      const totalSeconds = 24 * 60 * 60;
+
+      const width = timeAxisWidth + days.length * (columnWidth + columnGap) + 20;
+      const innerHeight = chartHeight - 60;
+
+      d3.select(container).selectAll("*").remove();
+
+      const svg = d3.select(container)
+        .append("svg")
+        .attr("width", width)
+        .attr("height", chartHeight + summaryHeight);
+
+      const g = svg.append("g").attr("transform", `translate(${timeAxisWidth}, 40)`);
+
+      const y = d3.scaleLinear()
+        .domain([0, totalSeconds])
+        .range([0, innerHeight]);
+
+      const x = d3.scaleBand()
+        .domain(days.map(d => d.id))
+        .range([0, days.length * (columnWidth + columnGap)])
+        .paddingInner(columnGap / (columnWidth + columnGap));
+
+      const tickEveryHours = 2;
+      const ticks = d3.range(0, 24 + 0.0001, tickEveryHours).map(h => h * 3600);
+
+      const tickFormat = (secFromWindowStart) => {
+        const base = days[0]?.window_start ?? DateTime.local();
+        const t = base.plus({ seconds: secFromWindowStart });
+        return t.toFormat("HH:mm");
+      };
+
+      // Horizontal grid
+      g.append("g")
+        .attr("class", "grid")
+        .call(d3.axisLeft(y)
+          .tickValues(ticks)
+          .tickSize(-x.range()[1])
+          .tickFormat("")
+        );
+
+      // Y axis
+      g.append("g")
+        .attr("class", "axis")
+        .call(d3.axisLeft(y).tickValues(ticks).tickFormat(tickFormat));
+
+      // Column labels
+      g.selectAll(".column-label")
+        .data(days)
+        .enter()
+        .append("text")
+        .attr("class", "column-label")
+        .attr("x", d => (x(d.id) ?? 0) + columnWidth / 2)
+        .attr("y", -12)
+        .attr("text-anchor", "middle")
+        .text(d => {
+          const dt = DateTime.fromISO(d.id);
+          return dt.toFormat("ccc MM/dd");
+        });
+
+      // Red color scheme
+      const feedColor = "#dc2626";     // red-600
+      const noFeedColor = "#fca5a5";   // red-300
+
+      const tooltip = document.querySelector(tooltipEl);
+
+      const bars = g.append("g")
+        .selectAll("g.segment")
+        .data(segments)
+        .enter()
+        .append("g")
+        .attr("class", "segment");
+
+      bars.append("rect")
+        .attr("class", d => `bar ${d.kind}`)
+        .attr("x", d => x(d.sleep_day_id) ?? 0)
+        .attr("y", d => y(d.offset_start_s))
+        .attr("width", columnWidth)
+        .attr("height", d => Math.max(0, y(d.offset_end_s) - y(d.offset_start_s)))
+        .attr("fill", d => d.kind === "feed" ? feedColor : noFeedColor)
+        .attr("opacity", d => d.kind === "feed" ? 0.95 : 0.35)
+        .on("mousemove", (event, d) => {
+          tooltip.style.display = "block";
+          tooltip.textContent = d.details;
+          const pad = 12;
+          tooltip.style.left = `${Math.min(window.innerWidth - 400, event.clientX + pad)}px`;
+          tooltip.style.top = `${Math.min(window.innerHeight - 150, event.clientY + pad)}px`;
+        })
+        .on("mouseleave", () => {
+          tooltip.style.display = "none";
+        });
+
+      // Duration labels for feed bars
+      const minHeightForDuration = 24;
+
+      bars.filter(d => {
+        const barHeight = y(d.offset_end_s) - y(d.offset_start_s);
+        return barHeight >= minHeightForDuration && d.kind === "feed";
+      })
+        .append("text")
+        .attr("class", "bar-label light")
+        .attr("x", d => (x(d.sleep_day_id) ?? 0) + columnWidth / 2)
+        .attr("y", d => {
+          const y0 = y(d.offset_start_s);
+          const y1 = y(d.offset_end_s);
+          return y0 + (y1 - y0) / 2;
+        })
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .attr("font-weight", "600")
+        .text(d => d.label);
+
+      // Duration labels for gap bars (time between feeds)
+      const minHeightForGapLabel = 32;
+
+      bars.filter(d => {
+        const barHeight = y(d.offset_end_s) - y(d.offset_start_s);
+        return barHeight >= minHeightForGapLabel && d.kind === "no_feed";
+      })
+        .append("text")
+        .attr("class", "bar-label")
+        .attr("x", d => (x(d.sleep_day_id) ?? 0) + columnWidth / 2)
+        .attr("y", d => {
+          const y0 = y(d.offset_start_s);
+          const y1 = y(d.offset_end_s);
+          return y0 + (y1 - y0) / 2;
+        })
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .attr("font-weight", "500")
+        .attr("opacity", 0.6)
+        .text(d => d.label);
+
+      // Notes indicator: dot in top-right corner
+      bars.filter(d => d.has_notes && d.kind === "feed")
+        .append("circle")
+        .attr("cx", d => (x(d.sleep_day_id) ?? 0) + columnWidth - 10)
+        .attr("cy", d => y(d.offset_start_s) + 10)
+        .attr("r", 5)
+        .attr("fill", "#ffffff")
+        .attr("stroke", "rgba(0,0,0,0.3)")
+        .attr("stroke-width", 1.5)
+        .attr("class", "metadata-indicator");
+
+      // Divider line
+      g.append("line")
+        .attr("x1", 0)
+        .attr("y1", innerHeight + 6)
+        .attr("x2", x.range()[1])
+        .attr("y2", innerHeight + 6)
+        .attr("stroke", "#e5e7eb")
+        .attr("stroke-width", 1);
+
+      // Summary stats
+      const summaryGroup = g.append("g")
+        .attr("class", "summary")
+        .attr("transform", `translate(0, ${innerHeight + 20})`);
+
+      const summaryData = model.days;
+
+      summaryData.forEach(day => {
+        const colX = x(day.id) ?? 0;
+        const s = day.summary;
+        const lineHeight = 16;
+
+        const lines = [
+          { label: "Feeds", value: `${s.feed_count}` },
+          { label: "Total", value: s.feed_total_pretty },
+          { label: "Avg feed", value: s.feed_avg_pretty },
+          { label: "Avg gap", value: s.gap_avg_pretty },
+          { label: "Max gap", value: s.gap_max_pretty },
+        ];
+
+        lines.forEach((line, i) => {
+          summaryGroup.append("text")
+            .attr("x", colX + 4)
+            .attr("y", i * lineHeight)
+            .attr("font-size", "10px")
+            .attr("fill", "#6b7280")
+            .text(line.label);
+
+          summaryGroup.append("text")
+            .attr("x", colX + columnWidth - 4)
+            .attr("y", i * lineHeight)
+            .attr("font-size", "10px")
+            .attr("fill", "#111827")
+            .attr("text-anchor", "end")
+            .attr("font-weight", "500")
+            .text(line.value);
+        });
+      });
+    }
+
+    /**
+     * =========================
      * Load data and render
      * =========================
      */
@@ -629,7 +1055,8 @@
     const TIMEZONE = "America/Sao_Paulo";
     const SLEEP_DAY_START_HOUR = 6; // Start at 6am (morning)
 
-    let allEvents = [];
+    let allSleepEvents = [];
+    let allFeedEvents = [];
 
     /**
      * Filter events to only include the last N days (based on sleep-day windows)
@@ -662,11 +1089,11 @@
       });
     }
 
-    function render(numDays) {
-      const filteredEvents = filterEventsByDays(allEvents, numDays);
+    function renderSleep(numDays) {
+      const filteredEvents = filterEventsByDays(allSleepEvents, numDays);
 
       if (filteredEvents.length === 0) {
-        document.querySelector("#errors").innerHTML =
+        document.querySelector("#chart-sleep").innerHTML =
           `<div class="error">No sleep data found. Run <code>make build</code> to generate data/sleep.json</div>`;
         return;
       }
@@ -678,13 +1105,42 @@
       };
 
       try {
-        document.querySelector("#errors").innerHTML = "";
         const model = buildSleepChartModel(input);
         renderSleepChart(model);
       } catch (err) {
-        document.querySelector("#errors").innerHTML =
+        document.querySelector("#chart-sleep").innerHTML =
           `<div class="error"><strong>Validation error</strong><pre style="margin:8px 0 0; white-space:pre-wrap;">${String(err.message)}</pre></div>`;
       }
+    }
+
+    function renderFeed(numDays) {
+      const filteredEvents = filterEventsByDays(allFeedEvents, numDays);
+
+      if (filteredEvents.length === 0) {
+        document.querySelector("#chart-feed").innerHTML =
+          `<div class="error">No feed data found. Run <code>make build</code> to generate data/feed.json</div>`;
+        return;
+      }
+
+      const input = {
+        timezone: TIMEZONE,
+        sleep_day_start_hour: SLEEP_DAY_START_HOUR,
+        events: filteredEvents
+      };
+
+      try {
+        const model = buildFeedChartModel(input);
+        renderFeedChart(model);
+      } catch (err) {
+        document.querySelector("#chart-feed").innerHTML =
+          `<div class="error"><strong>Validation error</strong><pre style="margin:8px 0 0; white-space:pre-wrap;">${String(err.message)}</pre></div>`;
+      }
+    }
+
+    function render(numDays) {
+      document.querySelector("#errors").innerHTML = "";
+      renderSleep(numDays);
+      renderFeed(numDays);
     }
 
     // Wire up days selector
@@ -694,19 +1150,25 @@
       render(val === "all" ? "all" : parseInt(val, 10));
     });
 
-    // Load data and render
-    fetch("data/sleep.json")
-      .then(res => {
+    // Load both data files and render
+    Promise.all([
+      fetch("data/sleep.json").then(res => {
         if (!res.ok) throw new Error(`Failed to load data/sleep.json (${res.status})`);
         return res.json();
+      }),
+      fetch("data/feed.json").then(res => {
+        if (!res.ok) throw new Error(`Failed to load data/feed.json (${res.status})`);
+        return res.json();
       })
-      .then(data => {
-        allEvents = data;
+    ])
+      .then(([sleepData, feedData]) => {
+        allSleepEvents = sleepData;
+        allFeedEvents = feedData;
         render(7);
       })
       .catch(err => {
         document.querySelector("#errors").innerHTML =
-          `<div class="error"><strong>Failed to load data</strong><br>${err.message}<br><br>Run <code>make build</code> to generate the data file.</div>`;
+          `<div class="error"><strong>Failed to load data</strong><br>${err.message}<br><br>Run <code>make build</code> to generate the data files.</div>`;
       });
   </script>
 </body>
