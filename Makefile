@@ -1,4 +1,4 @@
-.PHONY: build rebuild clean serve
+.PHONY: build rebuild clean serve check
 
 build: data/sleep.json data/feed.json
 
@@ -9,6 +9,9 @@ data/sleep.json: data-raw/data.csv scripts/sleep.R
 
 data/feed.json: data-raw/data.csv scripts/feed.R
 	Rscript scripts/feed.R
+
+check: build
+	Rscript scripts/check.R
 
 clean:
 	rm -f data/sleep.json data/feed.json

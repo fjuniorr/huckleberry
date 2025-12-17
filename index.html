@@ -368,18 +368,8 @@
         const totalNightSeconds = nightSleeps.reduce((sum, s) => sum + s.duration_seconds, 0);
         const avgNightBlockSeconds = nightSleepCount > 0 ? totalNightSeconds / nightSleepCount : 0;
 
-        // Night awakenings: wake segments that occur between night sleep blocks
-        // (not at the edges of the night period)
-        const sortedNightSleeps = [...nightSleeps].sort((a, b) => a.start.toMillis() - b.start.toMillis());
-        let nightAwakenings = 0;
-        if (sortedNightSleeps.length > 1) {
-          for (let i = 0; i < sortedNightSleeps.length - 1; i++) {
-            // Check if there's a gap between consecutive night sleeps
-            if (sortedNightSleeps[i + 1].start > sortedNightSleeps[i].end) {
-              nightAwakenings++;
-            }
-          }
-        }
+        // Night awakenings: number of sleep blocks minus 1
+        const nightAwakenings = Math.max(0, nightSleepCount - 1);
 
         // Store summary on day object
         day.summary = {
@@ -630,8 +620,8 @@
           { label: "Naps", value: `${s.nap_count} (${s.nap_total_pretty})` },
           { label: "Avg nap", value: s.nap_avg_pretty },
           { label: "Night", value: `${s.night_total_pretty}` },
-          { label: "Avg block", value: s.night_avg_pretty },
           { label: "Awakenings", value: `${s.night_awakenings}` },
+          { label: "Avg block", value: s.night_avg_pretty },
         ];
 
         lines.forEach((line, i) => {
@@ -847,7 +837,7 @@
         columnGap = 10,
         timeAxisWidth = 50,
         chartHeight = 920,
-        summaryHeight = 100
+        summaryHeight = 50
       } = opts;
 
       const days = model._days_luxon;
@@ -1021,9 +1011,6 @@
         const lines = [
           { label: "Feeds", value: `${s.feed_count}` },
           { label: "Total", value: s.feed_total_pretty },
-          { label: "Avg feed", value: s.feed_avg_pretty },
-          { label: "Avg gap", value: s.gap_avg_pretty },
-          { label: "Max gap", value: s.gap_max_pretty },
         ];
 
         lines.forEach((line, i) => {
