@@ -45,6 +45,7 @@
       font-weight: 500;
     }
     .bar-label.light { fill: #ffffff; }
+    .metadata-indicator { pointer-events: none; }
     .grid line { stroke: #e5e7eb; stroke-width: 1; }
     .grid path { display: none; }
 
@@ -200,32 +201,11 @@
     }
 
     /**
-     * Validate no overlaps within each sleep-day.
-     * Throws Error with details if overlap is found.
-     */
-    function validateNoOverlapsBySleepDay(sleepSegmentsByDay) {
-      for (const [sleepDayId, segs] of sleepSegmentsByDay.entries()) {
-        const sorted = [...segs].sort((a, b) => a.start.toMillis() - b.start.toMillis());
-        for (let i = 1; i < sorted.length; i++) {
-          const prev = sorted[i - 1];
-          const cur = sorted[i];
-          if (cur.start < prev.end) {
-            const msg =
-              `Invalid data: overlapping sleep intervals in sleep-day ${sleepDayId}\n` +
-              `Prev: ${prev.start.toISO()} → ${prev.end.toISO()} (${prev.type})\n` +
-              `Cur : ${cur.start.toISO()} → ${cur.end.toISO()} (${cur.type})`;
-            throw new Error(msg);
-          }
-        }
-      }
-    }
-
-    /**
      * Build the render model:
      * - split sleeps across sleep-day boundaries
-     * - validate overlaps
      * - compute wake windows (including window edges)
      * - compute duration_pretty + tooltip details
+     * Note: Overlapping sleep intervals are allowed
      */
     function buildSleepChartModel(input) {
       const {
@@ -279,12 +259,10 @@
       const sleepDays = [...sleepDayMap.values()]
         .sort((a, b) => a.window_start.toMillis() - b.window_start.toMillis());
 
-      // 3) Group sleep segments by day, validate overlaps
+      // 3) Group sleep segments by day
       const sleepByDay = new Map();
       for (const day of sleepDays) sleepByDay.set(day.id, []);
       for (const seg of sleepSegments) sleepByDay.get(seg.sleep_day_id).push(seg);
-
-      validateNoOverlapsBySleepDay(sleepByDay);
 
       // 4) Compute wake windows per sleep-day (including edges)
       const allSegments = [];
@@ -338,7 +316,52 @@
         addWake(sleeps[sleeps.length - 1].end, windowEnd);
       }
 
-      // 5) Build render-friendly fields: offset seconds and tooltip strings
+      // 5) Compute summary statistics per sleep-day
+      for (const day of sleepDays) {
+        const daySegments = allSegments.filter(s => s.sleep_day_id === day.id);
+
+        // Nap stats (day sleep)
+        const naps = daySegments.filter(s => s.kind === "sleep" && s.type === "day sleep");
+        const napCount = naps.length;
+        const totalNapSeconds = naps.reduce((sum, s) => sum + s.duration_seconds, 0);
+        const avgNapSeconds = napCount > 0 ? totalNapSeconds / napCount : 0;
+
+        // Night sleep stats
+        const nightSleeps = daySegments.filter(s => s.kind === "sleep" && s.type === "night sleep");
+        const nightSleepCount = nightSleeps.length;
+        const totalNightSeconds = nightSleeps.reduce((sum, s) => sum + s.duration_seconds, 0);
+        const avgNightBlockSeconds = nightSleepCount > 0 ? totalNightSeconds / nightSleepCount : 0;
+
+        // Night awakenings: wake segments that occur between night sleep blocks
+        // (not at the edges of the night period)
+        const sortedNightSleeps = [...nightSleeps].sort((a, b) => a.start.toMillis() - b.start.toMillis());
+        let nightAwakenings = 0;
+        if (sortedNightSleeps.length > 1) {
+          for (let i = 0; i < sortedNightSleeps.length - 1; i++) {
+            // Check if there's a gap between consecutive night sleeps
+            if (sortedNightSleeps[i + 1].start > sortedNightSleeps[i].end) {
+              nightAwakenings++;
+            }
+          }
+        }
+
+        // Store summary on day object
+        day.summary = {
+          nap_count: napCount,
+          nap_total_seconds: totalNapSeconds,
+          nap_total_pretty: formatDurationPretty(totalNapSeconds),
+          nap_avg_seconds: avgNapSeconds,
+          nap_avg_pretty: formatDurationPretty(avgNapSeconds),
+          night_awakenings: nightAwakenings,
+          night_sleep_count: nightSleepCount,
+          night_total_seconds: totalNightSeconds,
+          night_total_pretty: formatDurationPretty(totalNightSeconds),
+          night_avg_seconds: avgNightBlockSeconds,
+          night_avg_pretty: formatDurationPretty(avgNightBlockSeconds),
+        };
+      }
+
+      // 6) Build render-friendly fields: offset seconds and tooltip strings
       const sleepDayById = new Map(sleepDays.map(d => [d.id, d]));
 
       const segments = allSegments.map(seg => {
@@ -346,23 +369,26 @@
         const offsetStart = (seg.start.toMillis() - day.window_start.toMillis()) / 1000;
         const offsetEnd = (seg.end.toMillis() - day.window_start.toMillis()) / 1000;
 
-        const metaLines = [];
-        if (seg.start_condition) metaLines.push(`Start condition: ${seg.start_condition}`);
-        if (seg.end_condition) metaLines.push(`End condition: ${seg.end_condition}`);
-        if (seg.start_location) metaLines.push(`Start location: ${seg.start_location}`);
-        if (seg.notes) metaLines.push(`Notes: ${seg.notes}`);
+        // Check if segment has any metadata
+        const hasMetadata = !!(seg.start_condition || seg.end_condition || seg.start_location || seg.notes);
 
+        // Build metadata lines with labels, handling newlines in values
+        const metaLines = [];
+        if (seg.start_condition) metaLines.push(`Start: ${seg.start_condition.replace(/\\n/g, '\n')}`);
+        if (seg.end_condition) metaLines.push(`End: ${seg.end_condition.replace(/\\n/g, '\n')}`);
+        if (seg.start_location) metaLines.push(`Location: ${seg.start_location.replace(/\\n/g, '\n')}`);
+        if (seg.notes) metaLines.push(`Notes: ${seg.notes.replace(/\\n/g, '\n')}`);
+
+        // Build tooltip: time range + duration + metadata with spacing
         const details =
-          `${seg.kind.toUpperCase()} (${seg.type})\n` +
-          `Duration: ${seg.duration_pretty}\n` +
-          `Start: ${seg.start.toFormat("yyyy-LL-dd HH:mm")} (${timezone})\n` +
-          `End:   ${seg.end.toFormat("yyyy-LL-dd HH:mm")} (${timezone})` +
+          `${seg.start.toFormat("HH:mm")} → ${seg.end.toFormat("HH:mm")}  (${seg.duration_pretty})` +
           (metaLines.length ? `\n\n${metaLines.join("\n")}` : "");
 
         return {
           ...seg,
           offset_start_s: offsetStart,
           offset_end_s: offsetEnd,
+          has_metadata: hasMetadata,
           label: seg.duration_pretty,
           details
         };
@@ -374,7 +400,8 @@
         sleep_days: sleepDays.map(d => ({
           id: d.id,
           window_start: d.window_start.toISO(),
-          window_end: d.window_end.toISO()
+          window_end: d.window_end.toISO(),
+          summary: d.summary
         })),
         // Keep Luxon versions internally for render convenience
         _sleep_days_luxon: sleepDays,
@@ -395,7 +422,8 @@
         columnWidth = 140,      // width per day column (generous)
         columnGap = 10,
         timeAxisWidth = 50,     // left margin for time labels
-        chartHeight = 920       // total height for the 24h window (generous)
+        chartHeight = 920,      // height for the 24h window (generous)
+        summaryHeight = 130     // space for summary stats below chart
       } = opts;
 
       const sleepDays = model._sleep_days_luxon;
@@ -413,7 +441,7 @@
       const svg = d3.select(container)
         .append("svg")
         .attr("width", width)
-        .attr("height", chartHeight);
+        .attr("height", chartHeight + summaryHeight);
 
       const g = svg.append("g").attr("transform", `translate(${timeAxisWidth}, 40)`);
 
@@ -529,6 +557,67 @@
         .attr("dominant-baseline", "middle")
         .attr("font-weight", "600")
         .text(d => d.label);
+
+      // Metadata indicator: dot in top-right corner for bars with metadata
+      bars.filter(d => d.has_metadata && d.kind === "sleep")
+        .append("circle")
+        .attr("cx", d => (x(d.sleep_day_id) ?? 0) + columnWidth - 10)
+        .attr("cy", d => y(d.offset_start_s) + 10)
+        .attr("r", 5)
+        .attr("fill", d => needsLightText(d) ? "#ffffff" : "#1e3a5f")
+        .attr("stroke", d => needsLightText(d) ? "rgba(0,0,0,0.3)" : "rgba(255,255,255,0.5)")
+        .attr("stroke-width", 1.5)
+        .attr("class", "metadata-indicator");
+
+      // Divider line between chart and summary
+      g.append("line")
+        .attr("x1", 0)
+        .attr("y1", innerHeight + 6)
+        .attr("x2", x.range()[1])
+        .attr("y2", innerHeight + 6)
+        .attr("stroke", "#e5e7eb")
+        .attr("stroke-width", 1);
+
+      // Summary stats below each column
+      const summaryGroup = g.append("g")
+        .attr("class", "summary")
+        .attr("transform", `translate(0, ${innerHeight + 20})`);
+
+      const summaryData = model.sleep_days;
+
+      summaryData.forEach(day => {
+        const colX = x(day.id) ?? 0;
+        const s = day.summary;
+        const lineHeight = 16;
+
+        const lines = [
+          { label: "Naps", value: `${s.nap_count} (${s.nap_total_pretty})` },
+          { label: "Avg nap", value: s.nap_avg_pretty },
+          { label: "Night", value: `${s.night_total_pretty}` },
+          { label: "Avg block", value: s.night_avg_pretty },
+          { label: "Awakenings", value: `${s.night_awakenings}` },
+        ];
+
+        lines.forEach((line, i) => {
+          // Label
+          summaryGroup.append("text")
+            .attr("x", colX + 4)
+            .attr("y", i * lineHeight)
+            .attr("font-size", "10px")
+            .attr("fill", "#6b7280")
+            .text(line.label);
+
+          // Value
+          summaryGroup.append("text")
+            .attr("x", colX + columnWidth - 4)
+            .attr("y", i * lineHeight)
+            .attr("font-size", "10px")
+            .attr("fill", "#111827")
+            .attr("text-anchor", "end")
+            .attr("font-weight", "500")
+            .text(line.value);
+        });
+      });
     }
 
     /**

@@ -32,6 +32,8 @@ sleep <- dt |>
            ~if_else(is.na(.) | . == "", NA_character_, .))
   ) |>
   select(start, end, type, start_condition, end_condition, start_location, notes) |>
+  # Remove complete duplicate rows
+  distinct() |>
   arrange(start)
 
 # Output as JSON for index.html
