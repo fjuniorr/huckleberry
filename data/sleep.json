@@ -12841,5 +12841,77 @@
     "end_condition": null,
     "start_location": null,
     "notes": null
+  },
+  {
+    "start": "2025-12-17T07:31:00-03:00",
+    "end": "2025-12-17T07:44:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": "Comecei o processo às7h. Foi dormir somente às 7:30, mamando. Depois que coloquei no berço nao ficou 5min."
+  },
+  {
+    "start": "2025-12-17T08:57:00-03:00",
+    "end": "2025-12-17T10:39:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-17T13:00:00-03:00",
+    "end": "2025-12-17T13:35:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-17T16:13:00-03:00",
+    "end": "2025-12-17T17:02:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-17T19:20:00-03:00",
+    "end": "2025-12-17T22:51:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-17T19:20:00-03:00",
+    "end": "2025-12-17T20:05:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-17T23:15:00-03:00",
+    "end": "2025-12-18T03:23:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": "Deixamos ela sozinha \\brincando\\ no berço até 03:35 quando ela começou a ficar chorona. O pai foi tentar ninar mas o choro logo escalou.\\n\\nA mãe foi em seguida e deu peito as 03:40"
+  },
+  {
+    "start": "2025-12-18T04:10:00-03:00",
+    "end": "2025-12-18T06:20:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
   }
 ]
