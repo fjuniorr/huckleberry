@@ -2,10 +2,10 @@
 
 | Requirement | Status | Notes |
 |-------------|--------|-------|
-| A) Conceptual model (sleep-days) | ✅ Done | `sleepDayWindowStart()` function, configurable start hour |
+| A) Conceptual model (sleep-days) | ✅ Done | `sleepDayWindowStart()` function, configurable start hour, attribution vs. visualization distinction |
 | B) Input data (ISO-8601, metadata) | ✅ Done | Luxon parsing, nullable metadata |
 | C) Wrangling layer (renderable segments) | ✅ Done | `buildSleepChartModel()` |
-| D) Interval splitting at boundaries | ✅ Done | `splitBySleepDayBoundaries()` |
+| D) Interval splitting at boundaries | ✅ Done | `splitBySleepDayBoundaries()` (visualization only) |
 | E) Wake windows computation | ✅ Done | Gaps computed per sleep-day |
 | F) Visualization (D3/SVG Gantt chart) | ✅ Done | Vertical layout, colors, labels, tooltips, gridlines |
 | G) Edge cases / robustness | ✅ Done | Overlap validation, invalid duration filtering |
@@ -33,8 +33,17 @@ Then open `index.html` in a browser (needs a local server for fetch to work).
 ### A) Conceptual model
 
 * The chart is organized by **sleep-days**, not calendar days.
-* A **sleep-day** is defined as a fixed 24h window: **[18:00 → next day 18:00)** in the baby’s local timezone.
-* All intervals (sleep and derived wake) are rendered **within that 18:00–18:00 window** for the corresponding sleep-day row.
+* A **sleep-day** is defined as a fixed 24h window: **[06:00 → next day 06:00)** in the baby's local timezone.
+* All intervals (sleep and derived wake) are rendered **within that 06:00–06:00 window** for the corresponding sleep-day row.
+
+#### Attribution vs. Visualization (critical distinction)
+
+* **Attribution (for calculations)**: A sleep block that **starts before 06:00** belongs entirely to the **previous sleep-day** for all calculation purposes — it is treated as one contiguous block. This affects:
+  * Awakening counts
+  * Average sleep block duration
+  * Total sleep time per day
+  * Any other per-day statistics
+* **Visualization (display only)**: For rendering purposes, it is acceptable to **split** a sleep block at the 06:00 boundary so that each portion appears in the correct visual column. However, this split is purely cosmetic — the underlying calculations still treat the block as belonging to the day when it started.
 
 ### B) Input data
 
@@ -49,7 +58,7 @@ Then open `index.html` in a browser (needs a local server for fetch to work).
 
 The wrangling step produces a list of **renderable segments** where each segment:
 
-* Belongs to exactly one sleep-day row (i.e., has a `sleep_day_id` like `2025-12-08` meaning the window starting at `2025-12-08 18:00`).
+* Belongs to exactly one sleep-day row (i.e., has a `sleep_day_id` like `2025-12-08` meaning the window starting at `2025-12-08 06:00`).
 * Has:
 
   * `kind`: `"sleep"` or `"wake"`
@@ -60,31 +69,33 @@ The wrangling step produces a list of **renderable segments** where each segment
   * `label` (for inside-bar text): minimally the duration string
   * `details` (for hover tooltip): duration + start/end + any non-null metadata fields
 
-### D) Interval splitting rules (critical)
+### D) Interval splitting rules (for visualization)
 
-* Any input sleep interval that crosses a sleep-day boundary (18:00) must be **split at the boundary** into multiple segments so that:
+* Any input sleep interval that crosses a sleep-day boundary (06:00) must be **split at the boundary** into multiple segments so that:
 
   * each segment falls entirely within one sleep-day window
   * the visualization is simple (no wrapping across rows)
-* Splitting is also required if an interval extends outside the current sleep-day window (e.g., starts before 18:00 for that row or ends after 18:00 next day).
+* Splitting is also required if an interval extends outside the current sleep-day window (e.g., starts before 06:00 for that row or ends after 06:00 next day).
 
-### E) Wake windows computation (choose “easier to understand”)
+**Important**: Splitting is for **visualization only**. For calculation purposes, the original unsplit block retains its attribution to the sleep-day where it started (see Section A).
+
+### E) Wake windows computation (choose "easier to understand")
 
 * For each sleep-day window independently:
 
   1. Collect all **sleep segments** in that window, sorted by start time.
   2. Compute **wake segments** as the gaps:
 
-     * from `window_start (18:00)` → `first_sleep.start` (if positive)
+     * from `window_start (06:00)` → `first_sleep.start` (if positive)
      * between each `sleep[i].end` → `sleep[i+1].start` (if positive)
-     * from `last_sleep.end` → `window_end (next 18:00)` (if positive)
+     * from `last_sleep.end` → `window_end (next 06:00)` (if positive)
 * Wake segments must also have `duration_pretty` and be rendered as bars.
 
 ### F) Visualization requirements
 
 * Render a Gantt/timeline chart (Huckleberry-style):
 
-  * X-axis: time within the sleep-day window (18:00 … next 18:00)
+  * X-axis: time within the sleep-day window (06:00 … next 06:00)
   * Y-axis: sleep-days (rows)
 * Bars:
 
@@ -107,7 +118,7 @@ The wrangling step produces a list of **renderable segments** where each segment
 
 * Handle:
 
-  * intervals crossing midnight and/or 18:00 boundary (via splitting)
+  * intervals crossing midnight and/or 06:00 boundary (via splitting for visualization)
   * missing metadata fields
   * zero/negative durations (filter or flag as invalid)
   * overlapping sleeps within a window: reject with validation error, or
@@ -140,7 +151,7 @@ Define a canonical JSON input/output so you can generate the output from JS, R, 
 ```json
 {
   "timezone": "America/Sao_Paulo",
-  "sleep_day_start_hour": 18,
+  "sleep_day_start_hour": 6,
   "events": [
     {
       "start": "2025-12-08T23:46:00-03:00",
@@ -160,7 +171,7 @@ Define a canonical JSON input/output so you can generate the output from JS, R, 
 ```json
 {
   "sleep_days": [
-    { "id": "2025-12-08", "window_start": "...", "window_end": "..." }
+    { "id": "2025-12-08", "window_start": "2025-12-08T06:00:00", "window_end": "2025-12-09T06:00:00" }
   ],
   "segments": [
     {

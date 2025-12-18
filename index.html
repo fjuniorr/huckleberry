@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Baby Sleep Timeline (18:00–18:00)</title>
+  <title>Baby Sleep Timeline (06:00–06:00)</title>
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 16px; }
     h1 { font-size: 18px; margin: 0 0 12px; }
@@ -196,22 +196,35 @@
     }
 
     /**
-     * Given a datetime, return the sleep-day window start (18:00 local).
+     * Given a datetime, return the sleep-day window start (06:00 local by default).
      */
-    function sleepDayWindowStart(dt, sleepDayStartHour = 18) {
+    function sleepDayWindowStart(dt, sleepDayStartHour = 6) {
       const boundary = dt.startOf("day").plus({ hours: sleepDayStartHour });
       return dt < boundary ? boundary.minus({ days: 1 }) : boundary;
     }
 
-    function sleepDayIdFromDt(dt, sleepDayStartHour = 18) {
+    function sleepDayIdFromDt(dt, sleepDayStartHour = 6) {
       return sleepDayWindowStart(dt, sleepDayStartHour).toISODate(); // e.g., "2025-12-08"
     }
 
     /**
-     * Split an interval at sleep-day boundaries (18:00→18:00) so that each segment lives in exactly one sleep-day.
+     * For calculation purposes: determine which sleep-day a sleep event belongs to
+     * based on its START time. A sleep block that starts before the boundary hour
+     * belongs to the PREVIOUS sleep-day as one contiguous block.
+     *
+     * This differs from visualization splitting where blocks are split at boundaries.
+     */
+    function sleepDayIdForCalculation(startDt, sleepDayStartHour = 6) {
+      // A block starting before 06:00 belongs to the previous sleep-day
+      return sleepDayWindowStart(startDt, sleepDayStartHour).toISODate();
+    }
+
+    /**
+     * Split an interval at sleep-day boundaries (06:00→06:00) so that each segment lives in exactly one sleep-day.
+     * This is used for VISUALIZATION only - statistics use unsplit events attributed by start time.
      * Returns array of { sleep_day_id, window_start, window_end, start, end }
      */
-    function splitBySleepDayBoundaries(start, end, sleepDayStartHour = 18) {
+    function splitBySleepDayBoundaries(start, end, sleepDayStartHour = 6) {
       if (!(start instanceof DateTime) || !(end instanceof DateTime)) {
         throw new Error("splitBySleepDayBoundaries requires Luxon DateTime objects.");
       }
@@ -239,25 +252,56 @@
 
     /**
      * Build the render model:
-     * - split sleeps across sleep-day boundaries
+     * - split sleeps across sleep-day boundaries (for visualization)
      * - compute wake windows (including window edges)
      * - compute duration_pretty + tooltip details
+     * - compute statistics from ORIGINAL unsplit events (attribution by start time)
      * Note: Overlapping sleep intervals are allowed
      */
     function buildSleepChartModel(input) {
       const {
         timezone,
-        sleep_day_start_hour = 18,
+        sleep_day_start_hour = 6,
         events
       } = input;
 
-      // 1) Normalize + split input sleep intervals into per-sleep-day sleep segments
+      // 1a) Create "calculation events" - original unsplit events attributed by START time
+      // These are used for statistics (awakenings, avg block, totals)
+      const calculationEvents = [];
+      for (const e of events) {
+        const start = dtFromISO(e.start, timezone);
+        const end = dtFromISO(e.end, timezone);
+
+        if (end <= start) continue;
+
+        const durationSeconds = (end.toMillis() - start.toMillis()) / 1000;
+        const sleepDayId = sleepDayIdForCalculation(start, sleep_day_start_hour);
+        const windowStart = sleepDayWindowStart(start, sleep_day_start_hour);
+
+        calculationEvents.push({
+          sleep_day_id: sleepDayId,
+          window_start: windowStart,
+          window_end: windowStart.plus({ days: 1 }),
+          kind: "sleep",
+          type: e.type,
+          start: start,
+          end: end,
+          duration_seconds: durationSeconds,
+          duration_pretty: formatDurationPretty(durationSeconds),
+        });
+      }
+
+      // 1b) Normalize + split input sleep intervals into per-sleep-day sleep segments (for visualization)
       const sleepSegments = [];
       for (const e of events) {
         const start = dtFromISO(e.start, timezone);
         const end = dtFromISO(e.end, timezone);
 
         if (end <= start) continue; // or throw; here we silently drop invalid duration
+
+        // Calculate the ORIGINAL block's full duration (for labels)
+        const originalDurationSeconds = (end.toMillis() - start.toMillis()) / 1000;
+        const originalDurationPretty = formatDurationPretty(originalDurationSeconds);
 
         const splits = splitBySleepDayBoundaries(start, end, sleep_day_start_hour);
         for (const s of splits) {
@@ -272,6 +316,11 @@
             end: s.end,
             duration_seconds: durationSeconds,
             duration_pretty: formatDurationPretty(durationSeconds),
+            // Original block info (for bar labels and tooltips - shows full block even if split)
+            original_start: start,
+            original_end: end,
+            original_duration_seconds: originalDurationSeconds,
+            original_duration_pretty: originalDurationPretty,
             // Keep original metadata attached to each split piece
             start_condition: e.start_condition ?? null,
             end_condition: e.end_condition ?? null,
@@ -281,14 +330,25 @@
         }
       }
 
-      // 2) Determine all sleep-days to render (from the segments)
+      // 2) Determine all sleep-days to render (from both visual segments AND calculation events)
       const sleepDayMap = new Map(); // id -> { id, window_start, window_end }
+      // Include days from visual segments
       for (const seg of sleepSegments) {
         if (!sleepDayMap.has(seg.sleep_day_id)) {
           sleepDayMap.set(seg.sleep_day_id, {
             id: seg.sleep_day_id,
             window_start: seg.window_start,
             window_end: seg.window_end
+          });
+        }
+      }
+      // Also include days from calculation events (in case a day has stats but minimal visual segments)
+      for (const ev of calculationEvents) {
+        if (!sleepDayMap.has(ev.sleep_day_id)) {
+          sleepDayMap.set(ev.sleep_day_id, {
+            id: ev.sleep_day_id,
+            window_start: ev.window_start,
+            window_end: ev.window_end
           });
         }
       }
@@ -353,23 +413,26 @@
         addWake(sleeps[sleeps.length - 1].end, windowEnd);
       }
 
-      // 5) Compute summary statistics per sleep-day
+      // 5) Compute summary statistics per sleep-day using ORIGINAL unsplit events
+      // This ensures a sleep block that starts before 06:00 counts as ONE block for the previous day
       for (const day of sleepDays) {
-        const daySegments = allSegments.filter(s => s.sleep_day_id === day.id);
+        // Use calculationEvents (unsplit, attributed by start time) for statistics
+        const dayCalcEvents = calculationEvents.filter(e => e.sleep_day_id === day.id);
 
         // Nap stats (day sleep)
-        const naps = daySegments.filter(s => s.kind === "sleep" && s.type === "day sleep");
+        const naps = dayCalcEvents.filter(e => e.type === "day sleep");
         const napCount = naps.length;
-        const totalNapSeconds = naps.reduce((sum, s) => sum + s.duration_seconds, 0);
+        const totalNapSeconds = naps.reduce((sum, e) => sum + e.duration_seconds, 0);
         const avgNapSeconds = napCount > 0 ? totalNapSeconds / napCount : 0;
 
-        // Night sleep stats
-        const nightSleeps = daySegments.filter(s => s.kind === "sleep" && s.type === "night sleep");
+        // Night sleep stats - using original unsplit blocks
+        const nightSleeps = dayCalcEvents.filter(e => e.type === "night sleep");
         const nightSleepCount = nightSleeps.length;
-        const totalNightSeconds = nightSleeps.reduce((sum, s) => sum + s.duration_seconds, 0);
+        const totalNightSeconds = nightSleeps.reduce((sum, e) => sum + e.duration_seconds, 0);
         const avgNightBlockSeconds = nightSleepCount > 0 ? totalNightSeconds / nightSleepCount : 0;
 
         // Night awakenings: number of sleep blocks minus 1
+        // Now correctly counts original blocks, not split segments
         const nightAwakenings = Math.max(0, nightSleepCount - 1);
 
         // Store summary on day object
@@ -407,8 +470,12 @@
         if (seg.notes) metaLines.push(`Notes: ${seg.notes.replace(/\\n/g, '\n')}`);
 
         // Build tooltip: time range + duration + metadata with spacing
+        // Use original (unsplit) times and duration for sleep segments
+        const displayStart = seg.original_start ?? seg.start;
+        const displayEnd = seg.original_end ?? seg.end;
+        const displayDuration = seg.original_duration_pretty ?? seg.duration_pretty;
         const details =
-          `${seg.start.toFormat("HH:mm")} → ${seg.end.toFormat("HH:mm")}  (${seg.duration_pretty})` +
+          `${displayStart.toFormat("HH:mm")} → ${displayEnd.toFormat("HH:mm")}  (${displayDuration})` +
           (metaLines.length ? `\n\n${metaLines.join("\n")}` : "");
 
         return {
@@ -416,7 +483,8 @@
           offset_start_s: offsetStart,
           offset_end_s: offsetEnd,
           has_metadata: hasMetadata,
-          label: seg.duration_pretty,
+          // For sleep segments, use original (unsplit) duration for label; for wake, use segment duration
+          label: seg.original_duration_pretty ?? seg.duration_pretty,
           details
         };
       });
@@ -456,7 +524,7 @@
       const sleepDays = model._sleep_days_luxon;
       const segments = model.segments;
 
-      const totalSeconds = 24 * 60 * 60; // 18:00 → next 18:00
+      const totalSeconds = 24 * 60 * 60; // 06:00 → next 06:00
 
       // Dimensions
       const width = timeAxisWidth + sleepDays.length * (columnWidth + columnGap) + 20;
@@ -473,7 +541,7 @@
       const g = svg.append("g").attr("transform", `translate(${timeAxisWidth}, 40)`);
 
       // Scales
-      // Y-axis: time (18:00 at top → next 18:00 at bottom)
+      // Y-axis: time (06:00 at top → next 06:00 at bottom)
       const y = d3.scaleLinear()
         .domain([0, totalSeconds])
         .range([0, innerHeight]);
