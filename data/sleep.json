@@ -12885,7 +12885,7 @@
     "start_condition": null,
     "end_condition": null,
     "start_location": null,
-    "notes": null
+    "notes": "Ela acordou 20:05 brevemente e foi ninada pela mae"
   },
   {
     "start": "2025-12-17T23:15:00-03:00",
@@ -12904,5 +12904,104 @@
     "end_condition": null,
     "start_location": null,
     "notes": null
+  },
+  {
+    "start": "2025-12-18T08:05:00-03:00",
+    "end": "2025-12-18T08:15:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-18T09:46:00-03:00",
+    "end": "2025-12-18T11:24:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-18T13:25:00-03:00",
+    "end": "2025-12-18T13:50:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-18T16:08:00-03:00",
+    "end": "2025-12-18T17:17:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-18T19:25:00-03:00",
+    "end": "2025-12-18T20:10:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-18T20:13:00-03:00",
+    "end": "2025-12-18T20:40:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": "On own in bed",
+    "notes": "Virou e não conseguiu manter o sono. Pai entrou, deu chupeta e bateu na bundinha e ela dormiu."
+  },
+  {
+    "start": "2025-12-18T20:48:00-03:00",
+    "end": "2025-12-18T20:55:00-03:00",
+    "type": "night sleep",
+    "start_condition": "Upset",
+    "end_condition": null,
+    "start_location": "Worn or held",
+    "notes": "Pai teve que ninar porque ela estava chorando até pegar no soni"
+  },
+  {
+    "start": "2025-12-18T21:01:00-03:00",
+    "end": "2025-12-18T22:03:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-18T22:12:00-03:00",
+    "end": "2025-12-19T01:22:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": "Nao dei peito (na verdade, ela nem pediu. Achonquetava tao cansada que queria só dormir)"
+  },
+  {
+    "start": "2025-12-19T01:40:00-03:00",
+    "end": "2025-12-19T03:53:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-19T04:38:00-03:00",
+    "end": "2025-12-19T05:21:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": "Ela ficou no berço até 5:40 brincando. O pai tentou ninar até 5:50 sem sucesso e depois começou o dia."
   }
 ]

@@ -1,9 +1,28 @@
 "Type","Start","End","Duration","Start Condition","Start Location","End Condition","Notes"
+"Sleep","2025-12-19 04:38","2025-12-19 05:21","00:42",,,,"Ela ficou no berço até 5:40 brincando. O pai tentou ninar até 5:50 sem sucesso e depois começou o dia."
+"Feed","2025-12-19 04:20","2025-12-19 04:34","00:14",,"Breast","00:14L",
+"Sleep","2025-12-19 01:40","2025-12-19 03:53","02:13",,,,
+"Feed","2025-12-19 01:22","2025-12-19 01:42","00:20","00:20R","Breast",,
+"Sleep","2025-12-18 22:12","2025-12-19 01:22","03:09",,,,"Nao dei peito (na verdade, ela nem pediu. Achonquetava tao cansada que queria só dormir)"
+"Sleep","2025-12-18 21:01","2025-12-18 22:03","01:01",,,,
+"Sleep","2025-12-18 20:48","2025-12-18 20:55","00:07","Upset","Worn or held",,"Pai teve que ninar porque ela estava chorando até pegar no soni"
+"Sleep","2025-12-18 20:13","2025-12-18 20:40","00:27",,"On own in bed",,"Virou e não conseguiu manter o sono. Pai entrou, deu chupeta e bateu na bundinha e ela dormiu."
+"Sleep","2025-12-18 19:25","2025-12-18 20:10","00:45",,,,
+"Feed","2025-12-18 19:03","2025-12-18 19:37","00:34","00:27R","Breast","00:07L",
+"Sleep","2025-12-18 16:08","2025-12-18 17:17","01:09",,,,
+"Feed","2025-12-18 15:23","2025-12-18 15:26","00:02","00:02R","Breast",,
+"Sleep","2025-12-18 13:25","2025-12-18 13:50","00:25",,,,
+"Feed","2025-12-18 13:21","2025-12-18 13:34","00:13",,"Breast","00:13L",
+"Sleep","2025-12-18 09:46","2025-12-18 11:24","01:38",,,,
+"Feed","2025-12-18 09:35","2025-12-18 11:24","01:48","01:48R","Breast",,
+"Sleep","2025-12-18 08:05","2025-12-18 08:15","00:10",,,,
+"Feed","2025-12-18 07:41","2025-12-18 08:00","00:19",,"Breast","00:19L","Pediu quabdo estava com sono"
+"Feed","2025-12-18 07:02","2025-12-18 07:09","00:07","00:06R","Breast","00:01L",
 "Sleep","2025-12-18 04:10","2025-12-18 06:20","02:10",,,,
 "Feed","2025-12-18 03:41","2025-12-18 04:08","00:27","00:24R","Breast","00:03L",
 "Sleep","2025-12-17 23:15","2025-12-18 03:23","04:08",,,,"Deixamos ela sozinha \"brincando\" no berço até 03:35 quando ela começou a ficar chorona. O pai foi tentar ninar mas o choro logo escalou.\n\nA mãe foi em seguida e deu peito as 03:40"
 "Feed","2025-12-17 23:02","2025-12-17 23:16","00:14",,"Breast","00:14L",
-"Sleep","2025-12-17 19:20","2025-12-17 22:51","03:31",,,,
+"Sleep","2025-12-17 19:20","2025-12-17 22:51","03:31",,,,"Ela acordou 20:05 brevemente e foi ninada pela mae"
 "Feed","2025-12-17 19:00","2025-12-17 19:29","00:28","00:16R","Breast","00:12L",
 "Feed","2025-12-17 17:04","2025-12-17 17:13","00:08","00:05R","Breast","00:03L",
 "Sleep","2025-12-17 16:13","2025-12-17 17:02","00:49",,,,

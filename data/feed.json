@@ -11206,5 +11206,69 @@
     "right_breast": "00:24R",
     "left_breast": "00:03L",
     "notes": null
+  },
+  {
+    "start": "2025-12-18T07:02:00-03:00",
+    "end": "2025-12-18T07:09:00-03:00",
+    "duration_seconds": 420,
+    "right_breast": "00:06R",
+    "left_breast": "00:01L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-18T07:41:00-03:00",
+    "end": "2025-12-18T08:00:00-03:00",
+    "duration_seconds": 1140,
+    "right_breast": null,
+    "left_breast": "00:19L",
+    "notes": "Pediu quabdo estava com sono"
+  },
+  {
+    "start": "2025-12-18T09:35:00-03:00",
+    "end": "2025-12-18T11:24:00-03:00",
+    "duration_seconds": 6480,
+    "right_breast": "01:48R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-18T13:21:00-03:00",
+    "end": "2025-12-18T13:34:00-03:00",
+    "duration_seconds": 780,
+    "right_breast": null,
+    "left_breast": "00:13L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-18T15:23:00-03:00",
+    "end": "2025-12-18T15:26:00-03:00",
+    "duration_seconds": 120,
+    "right_breast": "00:02R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-18T19:03:00-03:00",
+    "end": "2025-12-18T19:37:00-03:00",
+    "duration_seconds": 2040,
+    "right_breast": "00:27R",
+    "left_breast": "00:07L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-19T01:22:00-03:00",
+    "end": "2025-12-19T01:42:00-03:00",
+    "duration_seconds": 1200,
+    "right_breast": "00:20R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-19T04:20:00-03:00",
+    "end": "2025-12-19T04:34:00-03:00",
+    "duration_seconds": 840,
+    "right_breast": null,
+    "left_breast": "00:14L",
+    "notes": null
   }
 ]
