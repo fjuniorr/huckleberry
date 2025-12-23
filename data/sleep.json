@@ -12234,7 +12234,7 @@
     "start": "2025-12-09T07:55:00-03:00",
     "end": "2025-12-09T08:57:00-03:00",
     "type": "day sleep",
-    "start_condition": "Happy, under_10_minutes",
+    "start_condition": "Under_10_minutes, happy",
     "end_condition": null,
     "start_location": null,
     "notes": null
@@ -12324,7 +12324,7 @@
     "start": "2025-12-10T06:03:00-03:00",
     "end": "2025-12-10T08:05:00-03:00",
     "type": "day sleep",
-    "start_condition": "Happy, under_10_minutes",
+    "start_condition": "Under_10_minutes, happy",
     "end_condition": null,
     "start_location": "On own in bed",
     "notes": null
@@ -12585,7 +12585,7 @@
     "start": "2025-12-13T11:00:00-03:00",
     "end": "2025-12-13T11:36:00-03:00",
     "type": "day sleep",
-    "start_condition": "Long time to fall asleep, upset",
+    "start_condition": "Upset, long time to fall asleep",
     "end_condition": null,
     "start_location": "Worn or held",
     "notes": "Entrei com ela no berço 10:15. Até 10:45 ela tava de boa e ai parece que machucou/assustou com a chupeta enquanto estava de bruços e começou a chorar de \\dor\\.\\n\\nNinei sem chupeta com forro."
@@ -12666,7 +12666,7 @@
     "start": "2025-12-14T11:45:00-03:00",
     "end": "2025-12-14T11:55:00-03:00",
     "type": "day sleep",
-    "start_condition": "Happy, under_10_minutes",
+    "start_condition": "Under_10_minutes, happy",
     "end_condition": null,
     "start_location": "Worn or held",
     "notes": "Ninada com chupeta sem choro"
@@ -13003,5 +13003,293 @@
     "end_condition": null,
     "start_location": null,
     "notes": "Ela ficou no berço até 5:40 brincando. O pai tentou ninar até 5:50 sem sucesso e depois começou o dia."
+  },
+  {
+    "start": "2025-12-19T07:18:00-03:00",
+    "end": "2025-12-19T08:15:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": "Parece que je relaxou mesmo só aos 30min (chupeta caiu da boca)\\nSoneca toda no colo. Acordou procurando peito/chupeta (de olhos fechafos, mas abrindo a boquinha)"
+  },
+  {
+    "start": "2025-12-19T10:00:00-03:00",
+    "end": "2025-12-19T10:49:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-19T12:51:00-03:00",
+    "end": "2025-12-19T14:34:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-19T17:05:00-03:00",
+    "end": "2025-12-19T17:42:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-19T19:35:00-03:00",
+    "end": "2025-12-19T22:37:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-19T22:52:00-03:00",
+    "end": "2025-12-20T02:26:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-20T03:15:00-03:00",
+    "end": "2025-12-20T05:34:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-20T07:50:00-03:00",
+    "end": "2025-12-20T08:15:00-03:00",
+    "type": "day sleep",
+    "start_condition": "Upset, long time to fall asleep",
+    "end_condition": null,
+    "start_location": "Worn or held",
+    "notes": "Pai: Comecei a andar com ela 06:50. Ficou no berço até 07:38 revirando quando começou a chorar. Pai ninou para dormir."
+  },
+  {
+    "start": "2025-12-20T10:40:00-03:00",
+    "end": "2025-12-20T11:08:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-20T13:10:00-03:00",
+    "end": "2025-12-20T15:13:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-20T17:50:00-03:00",
+    "end": "2025-12-20T18:22:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-20T20:20:00-03:00",
+    "end": "2025-12-20T20:56:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-20T21:16:00-03:00",
+    "end": "2025-12-20T23:08:00-03:00",
+    "type": "night sleep",
+    "start_condition": "Upset",
+    "end_condition": null,
+    "start_location": "Worn or held",
+    "notes": "Ninada pelo pai"
+  },
+  {
+    "start": "2025-12-21T01:17:00-03:00",
+    "end": "2025-12-21T01:29:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-21T01:44:00-03:00",
+    "end": "2025-12-21T04:49:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-21T08:10:00-03:00",
+    "end": "2025-12-21T08:58:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-21T09:14:00-03:00",
+    "end": "2025-12-21T09:42:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-21T11:39:00-03:00",
+    "end": "2025-12-21T12:09:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-21T14:24:00-03:00",
+    "end": "2025-12-21T15:33:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-21T18:20:00-03:00",
+    "end": "2025-12-21T19:30:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": "Comecou a tentar virar com 1:08"
+  },
+  {
+    "start": "2025-12-21T19:33:00-03:00",
+    "end": "2025-12-22T02:25:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": "Chupeta caiu com 1h20m, ela dois choro virou e dormiu."
+  },
+  {
+    "start": "2025-12-22T02:40:00-03:00",
+    "end": "2025-12-22T04:33:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": "1h52m: gemidos"
+  },
+  {
+    "start": "2025-12-22T05:08:00-03:00",
+    "end": "2025-12-22T06:39:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-22T09:19:00-03:00",
+    "end": "2025-12-22T09:47:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-22T11:30:00-03:00",
+    "end": "2025-12-22T12:29:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-22T15:00:00-03:00",
+    "end": "2025-12-22T15:58:00-03:00",
+    "type": "day sleep",
+    "start_condition": "Happy",
+    "end_condition": null,
+    "start_location": "Worn or held",
+    "notes": null
+  },
+  {
+    "start": "2025-12-22T18:35:00-03:00",
+    "end": "2025-12-22T20:11:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": "Já tinha virado e dormido alguns minutos antes mas acordou chorando (pouco)"
+  },
+  {
+    "start": "2025-12-22T20:38:00-03:00",
+    "end": "2025-12-23T00:51:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-23T01:05:00-03:00",
+    "end": "2025-12-23T05:29:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-23T08:12:00-03:00",
+    "end": "2025-12-23T08:41:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-23T10:36:00-03:00",
+    "end": "2025-12-23T11:29:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-23T10:36:00-03:00",
+    "end": "2025-12-23T11:27:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
   }
 ]
