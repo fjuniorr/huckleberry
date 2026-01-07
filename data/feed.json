@@ -11510,5 +11510,613 @@
     "right_breast": "00:57R",
     "left_breast": "00:02L",
     "notes": null
+  },
+  {
+    "start": "2025-12-23T14:20:00-03:00",
+    "end": "2025-12-23T15:00:00-03:00",
+    "duration_seconds": 2400,
+    "right_breast": null,
+    "left_breast": "00:40L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-23T18:24:00-03:00",
+    "end": "2025-12-23T18:48:00-03:00",
+    "duration_seconds": 1440,
+    "right_breast": "00:13R",
+    "left_breast": "00:11L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-23T23:29:00-03:00",
+    "end": "2025-12-23T23:49:00-03:00",
+    "duration_seconds": 1140,
+    "right_breast": "00:11R",
+    "left_breast": "00:07L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-24T04:32:00-03:00",
+    "end": "2025-12-24T04:49:00-03:00",
+    "duration_seconds": 1020,
+    "right_breast": "00:08R",
+    "left_breast": "00:09L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-24T07:03:00-03:00",
+    "end": "2025-12-24T07:21:00-03:00",
+    "duration_seconds": 1080,
+    "right_breast": "00:09R",
+    "left_breast": "00:09L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-24T08:53:00-03:00",
+    "end": "2025-12-24T10:02:00-03:00",
+    "duration_seconds": 4080,
+    "right_breast": null,
+    "left_breast": "01:08L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-24T17:41:00-03:00",
+    "end": "2025-12-24T17:57:00-03:00",
+    "duration_seconds": 900,
+    "right_breast": "00:15R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-24T19:32:00-03:00",
+    "end": "2025-12-24T20:02:00-03:00",
+    "duration_seconds": 1800,
+    "right_breast": "00:15R",
+    "left_breast": "00:14L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-25T03:46:00-03:00",
+    "end": "2025-12-25T04:10:00-03:00",
+    "duration_seconds": 1380,
+    "right_breast": "00:16R",
+    "left_breast": "00:07L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-25T09:47:00-03:00",
+    "end": "2025-12-25T09:55:00-03:00",
+    "duration_seconds": 480,
+    "right_breast": "00:08R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-25T16:02:00-03:00",
+    "end": "2025-12-25T16:12:00-03:00",
+    "duration_seconds": 540,
+    "right_breast": "00:03R",
+    "left_breast": "00:06L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-25T18:28:00-03:00",
+    "end": "2025-12-25T19:07:00-03:00",
+    "duration_seconds": 2340,
+    "right_breast": "00:24R",
+    "left_breast": "00:14L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-26T00:13:00-03:00",
+    "end": "2025-12-26T00:39:00-03:00",
+    "duration_seconds": 1560,
+    "right_breast": "00:15R",
+    "left_breast": "00:10L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-26T04:58:00-03:00",
+    "end": "2025-12-26T05:10:00-03:00",
+    "duration_seconds": 720,
+    "right_breast": "00:09R",
+    "left_breast": "00:03L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-26T06:47:00-03:00",
+    "end": "2025-12-26T06:55:00-03:00",
+    "duration_seconds": 480,
+    "right_breast": "00:03R",
+    "left_breast": "00:05L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-26T07:58:00-03:00",
+    "end": "2025-12-26T08:01:00-03:00",
+    "duration_seconds": 180,
+    "right_breast": "00:02R",
+    "left_breast": "00:01L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-26T10:50:00-03:00",
+    "end": "2025-12-26T10:56:00-03:00",
+    "duration_seconds": 300,
+    "right_breast": "00:05R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-26T18:32:00-03:00",
+    "end": "2025-12-26T18:48:00-03:00",
+    "duration_seconds": 960,
+    "right_breast": "00:08R",
+    "left_breast": "00:08L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-26T19:12:00-03:00",
+    "end": "2025-12-26T19:40:00-03:00",
+    "duration_seconds": 1680,
+    "right_breast": "00:28R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-26T21:56:00-03:00",
+    "end": "2025-12-26T22:02:00-03:00",
+    "duration_seconds": 360,
+    "right_breast": "00:06R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-27T02:52:00-03:00",
+    "end": "2025-12-27T03:10:00-03:00",
+    "duration_seconds": 1080,
+    "right_breast": "00:18R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-27T03:16:00-03:00",
+    "end": "2025-12-27T03:28:00-03:00",
+    "duration_seconds": 720,
+    "right_breast": null,
+    "left_breast": "00:12L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-27T06:58:00-03:00",
+    "end": "2025-12-27T07:26:00-03:00",
+    "duration_seconds": 1680,
+    "right_breast": "00:28R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-27T18:04:00-03:00",
+    "end": "2025-12-27T18:12:00-03:00",
+    "duration_seconds": 480,
+    "right_breast": "00:08R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-27T18:41:00-03:00",
+    "end": "2025-12-27T19:09:00-03:00",
+    "duration_seconds": 1680,
+    "right_breast": "00:14R",
+    "left_breast": "00:14L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-28T00:17:00-03:00",
+    "end": "2025-12-28T00:41:00-03:00",
+    "duration_seconds": 1440,
+    "right_breast": "00:18R",
+    "left_breast": "00:05L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-28T03:01:00-03:00",
+    "end": "2025-12-28T03:13:00-03:00",
+    "duration_seconds": 720,
+    "right_breast": "00:12R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-28T05:49:00-03:00",
+    "end": "2025-12-28T05:57:00-03:00",
+    "duration_seconds": 420,
+    "right_breast": "00:04R",
+    "left_breast": "00:03L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-28T08:35:00-03:00",
+    "end": "2025-12-28T08:45:00-03:00",
+    "duration_seconds": 540,
+    "right_breast": "00:02R",
+    "left_breast": "00:07L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-28T10:41:00-03:00",
+    "end": "2025-12-28T11:33:00-03:00",
+    "duration_seconds": 3120,
+    "right_breast": "00:52R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-28T18:50:00-03:00",
+    "end": "2025-12-28T19:25:00-03:00",
+    "duration_seconds": 2100,
+    "right_breast": "00:14R",
+    "left_breast": "00:20L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-28T23:00:00-03:00",
+    "end": "2025-12-28T23:05:00-03:00",
+    "duration_seconds": 300,
+    "right_breast": "00:02R",
+    "left_breast": "00:02L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-29T02:14:00-03:00",
+    "end": "2025-12-29T02:16:00-03:00",
+    "duration_seconds": 60,
+    "right_breast": null,
+    "left_breast": "00:01L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-29T03:45:00-03:00",
+    "end": "2025-12-29T04:00:00-03:00",
+    "duration_seconds": 840,
+    "right_breast": "00:14R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-29T10:09:00-03:00",
+    "end": "2025-12-29T10:15:00-03:00",
+    "duration_seconds": 360,
+    "right_breast": "00:02R",
+    "left_breast": "00:04L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-29T12:10:00-03:00",
+    "end": "2025-12-29T12:26:00-03:00",
+    "duration_seconds": 960,
+    "right_breast": "00:08R",
+    "left_breast": "00:08L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-29T14:09:00-03:00",
+    "end": "2025-12-29T14:11:00-03:00",
+    "duration_seconds": 120,
+    "right_breast": null,
+    "left_breast": "00:02L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-29T16:39:00-03:00",
+    "end": "2025-12-29T16:47:00-03:00",
+    "duration_seconds": 420,
+    "right_breast": "00:06R",
+    "left_breast": "00:00L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-29T18:47:00-03:00",
+    "end": "2025-12-29T19:15:00-03:00",
+    "duration_seconds": 1680,
+    "right_breast": "00:20R",
+    "left_breast": "00:07L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-29T23:10:00-03:00",
+    "end": "2025-12-29T23:37:00-03:00",
+    "duration_seconds": 1620,
+    "right_breast": "00:13R",
+    "left_breast": "00:14L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-30T13:04:00-03:00",
+    "end": "2025-12-30T13:40:00-03:00",
+    "duration_seconds": 2100,
+    "right_breast": "00:35R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-30T16:27:00-03:00",
+    "end": "2025-12-30T16:32:00-03:00",
+    "duration_seconds": 240,
+    "right_breast": null,
+    "left_breast": "00:04L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-30T19:11:00-03:00",
+    "end": "2025-12-30T19:35:00-03:00",
+    "duration_seconds": 1380,
+    "right_breast": "00:18R",
+    "left_breast": "00:05L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-31T01:29:00-03:00",
+    "end": "2025-12-31T01:54:00-03:00",
+    "duration_seconds": 1440,
+    "right_breast": "00:10R",
+    "left_breast": "00:14L",
+    "notes": null
+  },
+  {
+    "start": "2025-12-31T07:14:00-03:00",
+    "end": "2025-12-31T07:24:00-03:00",
+    "duration_seconds": 600,
+    "right_breast": "00:10R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2025-12-31T10:58:00-03:00",
+    "end": "2025-12-31T11:02:00-03:00",
+    "duration_seconds": 240,
+    "right_breast": "00:04R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-01T00:58:00-03:00",
+    "end": "2026-01-01T01:18:00-03:00",
+    "duration_seconds": 1200,
+    "right_breast": "00:10R",
+    "left_breast": "00:10L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-01T11:34:00-03:00",
+    "end": "2026-01-01T11:43:00-03:00",
+    "duration_seconds": 480,
+    "right_breast": "00:08R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-01T12:00:00-03:00",
+    "end": "2026-01-01T13:14:00-03:00",
+    "duration_seconds": 4440,
+    "right_breast": "01:14R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-01T15:13:00-03:00",
+    "end": "2026-01-01T15:18:00-03:00",
+    "duration_seconds": 300,
+    "right_breast": "00:03R",
+    "left_breast": "00:01L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-01T18:41:00-03:00",
+    "end": "2026-01-01T19:09:00-03:00",
+    "duration_seconds": 1680,
+    "right_breast": "00:12R",
+    "left_breast": "00:16L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-01T23:38:00-03:00",
+    "end": "2026-01-01T23:44:00-03:00",
+    "duration_seconds": 360,
+    "right_breast": null,
+    "left_breast": "00:06L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-02T02:54:00-03:00",
+    "end": "2026-01-02T03:04:00-03:00",
+    "duration_seconds": 600,
+    "right_breast": "00:10R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-02T04:51:00-03:00",
+    "end": "2026-01-02T05:01:00-03:00",
+    "duration_seconds": 600,
+    "right_breast": null,
+    "left_breast": "00:10L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-02T07:13:00-03:00",
+    "end": "2026-01-02T07:18:00-03:00",
+    "duration_seconds": 300,
+    "right_breast": null,
+    "left_breast": "00:05L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-02T11:14:00-03:00",
+    "end": "2026-01-02T11:36:00-03:00",
+    "duration_seconds": 1320,
+    "right_breast": "00:11R",
+    "left_breast": "00:11L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-02T22:48:00-03:00",
+    "end": "2026-01-02T23:00:00-03:00",
+    "duration_seconds": 720,
+    "right_breast": "00:12R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-03T02:05:00-03:00",
+    "end": "2026-01-03T02:12:00-03:00",
+    "duration_seconds": 360,
+    "right_breast": null,
+    "left_breast": "00:06L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-03T19:01:00-03:00",
+    "end": "2026-01-03T19:28:00-03:00",
+    "duration_seconds": 1620,
+    "right_breast": "00:14R",
+    "left_breast": "00:13L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-03T23:10:00-03:00",
+    "end": "2026-01-03T23:20:00-03:00",
+    "duration_seconds": 600,
+    "right_breast": "00:10R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-04T01:06:00-03:00",
+    "end": "2026-01-04T01:24:00-03:00",
+    "duration_seconds": 1080,
+    "right_breast": null,
+    "left_breast": "00:18L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-04T05:21:00-03:00",
+    "end": "2026-01-04T05:47:00-03:00",
+    "duration_seconds": 1560,
+    "right_breast": "00:26R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-04T19:19:00-03:00",
+    "end": "2026-01-04T19:40:00-03:00",
+    "duration_seconds": 1260,
+    "right_breast": "00:11R",
+    "left_breast": "00:10L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-04T23:31:00-03:00",
+    "end": "2026-01-04T23:50:00-03:00",
+    "duration_seconds": 1080,
+    "right_breast": "00:09R",
+    "left_breast": "00:09L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-05T03:19:00-03:00",
+    "end": "2026-01-05T03:41:00-03:00",
+    "duration_seconds": 1320,
+    "right_breast": "00:09R",
+    "left_breast": "00:12L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-05T09:40:00-03:00",
+    "end": "2026-01-05T10:06:00-03:00",
+    "duration_seconds": 1560,
+    "right_breast": "00:26R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-05T17:26:00-03:00",
+    "end": "2026-01-05T17:31:00-03:00",
+    "duration_seconds": 300,
+    "right_breast": null,
+    "left_breast": "00:05L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-05T19:20:00-03:00",
+    "end": "2026-01-05T19:51:00-03:00",
+    "duration_seconds": 1860,
+    "right_breast": "00:17R",
+    "left_breast": "00:14L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-06T02:10:00-03:00",
+    "end": "2026-01-06T02:25:00-03:00",
+    "duration_seconds": 900,
+    "right_breast": "00:15R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-06T13:15:00-03:00",
+    "end": "2026-01-06T13:20:00-03:00",
+    "duration_seconds": 240,
+    "right_breast": "00:04R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-06T15:50:00-03:00",
+    "end": "2026-01-06T15:58:00-03:00",
+    "duration_seconds": 420,
+    "right_breast": "00:07R",
+    "left_breast": "00:00L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-06T17:26:00-03:00",
+    "end": "2026-01-06T17:30:00-03:00",
+    "duration_seconds": 240,
+    "right_breast": "00:04R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-06T19:26:00-03:00",
+    "end": "2026-01-06T19:41:00-03:00",
+    "duration_seconds": 840,
+    "right_breast": "00:03R",
+    "left_breast": "00:11L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-07T02:25:00-03:00",
+    "end": "2026-01-07T02:50:00-03:00",
+    "duration_seconds": 1500,
+    "right_breast": null,
+    "left_breast": "00:25L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-07T05:11:00-03:00",
+    "end": "2026-01-07T05:17:00-03:00",
+    "duration_seconds": 360,
+    "right_breast": "00:06R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-07T06:11:00-03:00",
+    "end": "2026-01-07T06:15:00-03:00",
+    "duration_seconds": 180,
+    "right_breast": "00:03R",
+    "left_breast": null,
+    "notes": null
   }
 ]
