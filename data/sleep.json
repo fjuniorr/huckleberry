@@ -14812,5 +14812,140 @@
     "end_condition": null,
     "start_location": null,
     "notes": null
+  },
+  {
+    "start": "2026-01-14T07:30:00-03:00",
+    "end": "2026-01-14T08:30:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-14T10:40:00-03:00",
+    "end": "2026-01-14T12:00:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-14T14:33:00-03:00",
+    "end": "2026-01-14T15:45:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-14T20:17:00-03:00",
+    "end": "2026-01-14T23:06:00-03:00",
+    "type": "night sleep",
+    "start_condition": "Long time to fall asleep",
+    "end_condition": null,
+    "start_location": "On own in bed",
+    "notes": "Comecei a ninar 19:10. Ela estava calma coloquei no berço e sai do quarto. Deixei 25 minutos, ela ficou revirando não chegou a chorar mas também não dormiu.\\n\\nVoltei pro quarto pra ninar mas ela parecia chorar quando eu pegava no colo. Passei a colocar de volta no berço quando o choro aumentava no colo.\\n\\nEventualmente em uma das voltas ela pareceu mais calma e dormiu no berço sozinha."
+  },
+  {
+    "start": "2026-01-14T23:10:00-03:00",
+    "end": "2026-01-15T00:43:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-15T00:55:00-03:00",
+    "end": "2026-01-15T02:45:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-15T03:20:00-03:00",
+    "end": "2026-01-15T05:43:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-15T07:40:00-03:00",
+    "end": "2026-01-15T08:10:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-15T10:15:00-03:00",
+    "end": "2026-01-15T11:36:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-15T13:52:00-03:00",
+    "end": "2026-01-15T15:56:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-15T19:45:00-03:00",
+    "end": "2026-01-15T22:23:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-15T22:39:00-03:00",
+    "end": "2026-01-16T00:43:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": "Quando acordou notei que quarto estava muito frio. Acho que l ar condicionado está sendo um problema, estamos usando na temperatura 25 mas ele nao desarma. E quando usamos no 26 fica quente."
+  },
+  {
+    "start": "2026-01-16T00:50:00-03:00",
+    "end": "2026-01-16T04:55:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-16T05:30:00-03:00",
+    "end": "2026-01-16T06:34:00-03:00",
+    "type": "night sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-16T08:20:00-03:00",
+    "end": "2026-01-16T09:55:00-03:00",
+    "type": "day sleep",
+    "start_condition": null,
+    "end_condition": null,
+    "start_location": null,
+    "notes": null
   }
 ]
