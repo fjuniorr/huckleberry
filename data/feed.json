@@ -12462,5 +12462,197 @@
     "right_breast": "00:04R",
     "left_breast": null,
     "notes": null
+  },
+  {
+    "start": "2026-01-16T14:07:00-03:00",
+    "end": "2026-01-16T14:10:00-03:00",
+    "duration_seconds": 120,
+    "right_breast": "00:02R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-16T19:16:00-03:00",
+    "end": "2026-01-16T19:38:00-03:00",
+    "duration_seconds": 1320,
+    "right_breast": "00:14R",
+    "left_breast": "00:07L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-17T01:23:00-03:00",
+    "end": "2026-01-17T01:50:00-03:00",
+    "duration_seconds": 1620,
+    "right_breast": "00:12R",
+    "left_breast": "00:14L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-17T07:39:00-03:00",
+    "end": "2026-01-17T07:54:00-03:00",
+    "duration_seconds": 900,
+    "right_breast": "00:15R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-17T18:55:00-03:00",
+    "end": "2026-01-17T19:15:00-03:00",
+    "duration_seconds": 1140,
+    "right_breast": "00:04R",
+    "left_breast": "00:15L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-18T00:50:00-03:00",
+    "end": "2026-01-18T01:12:00-03:00",
+    "duration_seconds": 1320,
+    "right_breast": "00:14R",
+    "left_breast": "00:08L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-18T04:52:00-03:00",
+    "end": "2026-01-18T05:32:00-03:00",
+    "duration_seconds": 2400,
+    "right_breast": "00:13R",
+    "left_breast": "00:27L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-18T07:18:00-03:00",
+    "end": "2026-01-18T07:23:00-03:00",
+    "duration_seconds": 300,
+    "right_breast": "00:05R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-18T08:30:00-03:00",
+    "end": "2026-01-18T09:07:00-03:00",
+    "duration_seconds": 2220,
+    "right_breast": "00:37R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-18T13:51:00-03:00",
+    "end": "2026-01-18T14:00:00-03:00",
+    "duration_seconds": 540,
+    "right_breast": "00:09R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-18T16:46:00-03:00",
+    "end": "2026-01-18T16:53:00-03:00",
+    "duration_seconds": 420,
+    "right_breast": "00:06R",
+    "left_breast": "00:00L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-18T19:02:00-03:00",
+    "end": "2026-01-18T19:31:00-03:00",
+    "duration_seconds": 1740,
+    "right_breast": "00:15R",
+    "left_breast": "00:14L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-19T00:08:00-03:00",
+    "end": "2026-01-19T00:27:00-03:00",
+    "duration_seconds": 1140,
+    "right_breast": "00:14R",
+    "left_breast": "00:05L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-19T06:00:00-03:00",
+    "end": "2026-01-19T06:04:00-03:00",
+    "duration_seconds": 240,
+    "right_breast": "00:04R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-19T06:15:00-03:00",
+    "end": "2026-01-19T06:20:00-03:00",
+    "duration_seconds": 300,
+    "right_breast": "00:05R",
+    "left_breast": "00:00L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-19T10:08:00-03:00",
+    "end": "2026-01-19T10:16:00-03:00",
+    "duration_seconds": 480,
+    "right_breast": "00:03R",
+    "left_breast": "00:05L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-19T19:33:00-03:00",
+    "end": "2026-01-19T19:59:00-03:00",
+    "duration_seconds": 1500,
+    "right_breast": "00:13R",
+    "left_breast": "00:12L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-20T05:03:00-03:00",
+    "end": "2026-01-20T05:43:00-03:00",
+    "duration_seconds": 2400,
+    "right_breast": "00:10R",
+    "left_breast": "00:30L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-20T13:25:00-03:00",
+    "end": "2026-01-20T13:35:00-03:00",
+    "duration_seconds": 600,
+    "right_breast": "00:05R",
+    "left_breast": "00:05L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-20T19:17:00-03:00",
+    "end": "2026-01-20T19:25:00-03:00",
+    "duration_seconds": 480,
+    "right_breast": "00:03R",
+    "left_breast": "00:05L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-20T19:34:00-03:00",
+    "end": "2026-01-20T19:39:00-03:00",
+    "duration_seconds": 240,
+    "right_breast": "00:04R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-01-21T02:16:00-03:00",
+    "end": "2026-01-21T02:50:00-03:00",
+    "duration_seconds": 2040,
+    "right_breast": "00:08R",
+    "left_breast": "00:25L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-21T06:01:00-03:00",
+    "end": "2026-01-21T06:13:00-03:00",
+    "duration_seconds": 720,
+    "right_breast": null,
+    "left_breast": "00:12L",
+    "notes": null
+  },
+  {
+    "start": "2026-01-21T09:24:00-03:00",
+    "end": "2026-01-21T09:30:00-03:00",
+    "duration_seconds": 360,
+    "right_breast": "00:05R",
+    "left_breast": "00:01L",
+    "notes": null
   }
 ]
