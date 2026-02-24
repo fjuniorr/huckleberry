@@ -13262,5 +13262,45 @@
     "right_breast": null,
     "left_breast": "00:07L",
     "notes": null
+  },
+  {
+    "start": "2026-02-23T00:09:00-03:00",
+    "end": "2026-02-23T00:17:00-03:00",
+    "duration_seconds": 420,
+    "right_breast": "00:07R",
+    "left_breast": null,
+    "notes": null
+  },
+  {
+    "start": "2026-02-23T04:45:00-03:00",
+    "end": "2026-02-23T04:57:00-03:00",
+    "duration_seconds": 720,
+    "right_breast": null,
+    "left_breast": "00:12L",
+    "notes": "No berço"
+  },
+  {
+    "start": "2026-02-23T20:15:00-03:00",
+    "end": "2026-02-23T20:22:00-03:00",
+    "duration_seconds": 360,
+    "right_breast": null,
+    "left_breast": "00:06L",
+    "notes": null
+  },
+  {
+    "start": "2026-02-23T23:52:00-03:00",
+    "end": "2026-02-24T00:01:00-03:00",
+    "duration_seconds": 540,
+    "right_breast": "00:09R",
+    "left_breast": null,
+    "notes": "No berço"
+  },
+  {
+    "start": "2026-02-24T05:08:00-03:00",
+    "end": "2026-02-24T05:26:00-03:00",
+    "duration_seconds": 1080,
+    "right_breast": null,
+    "left_breast": "00:18L",
+    "notes": "No berço"
   }
 ]
